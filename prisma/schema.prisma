@@ -1,0 +1,359 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String            @id @default(cuid())
+  email        String            @unique
+  passwordHash String
+  name         String
+  role         String            @default("CANDIDATE") // CANDIDATE, EMPLOYER, ADMIN
+  orgId        String?
+  organization Organization?     @relation(fields: [orgId], references: [id])
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  profile          CandidateProfile?
+  resumes          Resume[]
+  projects         Project[]
+  repositories     Repository[]
+  jobDescriptions  JobDescription[]
+  interviews       Interview[]
+  claims           CandidateClaim[]
+  skillAssessments SkillAssessment[]
+  trainingPlans    TrainingPlan[]
+  auditEvents      AuditEvent[]
+  usageRecords     UsageRecord[]
+  providerConfigs  ProviderConfig[]
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      String   @default("FREE") // FREE, PRO, PREMIUM, ENTERPRISE
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users           User[]
+  jobDescriptions JobDescription[]
+  interviews      Interview[]
+  providerConfigs ProviderConfig[]
+  usageRecords    UsageRecord[]
+  auditEvents     AuditEvent[]
+}
+
+model CandidateProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetRole        String   @default("Software Engineer")
+  experienceLevel   String   @default("Mid-Level")
+  preferredLanguage String   @default("en-US")
+  technicalDomains  String   @default("[]") // JSON string array of domains
+  interviewerStyle  String   @default("PROFESSIONAL")
+  targetCompanies   String   @default("")
+  interviewGoals    String   @default("")
+  confidenceLevel   String   @default("Moderate")
+  githubHandle      String   @default("")
+  linkedinUrl       String   @default("")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Resume {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filename   String
+  fileUrl    String   @default("")
+  rawText    String
+  parsedData String   @default("{}") // JSON string: { experience, education, projects, skills, claims, metrics }
+  createdAt  DateTime @default(now())
+
+  interviews Interview[]
+}
+
+model Project {
+  id                  String       @id @default(cuid())
+  userId              String
+  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                String
+  description         String
+  repoUrl             String       @default("")
+  architectureSummary String       @default("")
+  techStack           String       @default("[]") // JSON string array
+  claims              String       @default("[]") // JSON string array
+  createdAt           DateTime     @default(now())
+
+  repositories Repository[]
+  interviews   Interview[]
+}
+
+model Repository {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId         String?
+  project           Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  owner             String
+  repoName          String
+  defaultBranch     String   @default("main")
+  languages         String   @default("[]") // JSON string
+  structureSummary  String   @default("")
+  readmeContent     String   @default("")
+  dependencySummary String   @default("{}") // JSON string
+  createdAt         DateTime @default(now())
+}
+
+model JobDescription {
+  id                    String        @id @default(cuid())
+  userId                String?
+  user                  User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orgId                 String?
+  organization          Organization? @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  title                 String
+  company               String        @default("")
+  rawText               String
+  role                  String        @default("")
+  seniority             String        @default("Mid-Level")
+  requiredSkills        String        @default("[]") // JSON string
+  preferredSkills       String        @default("[]") // JSON string
+  responsibilities      String        @default("[]") // JSON string
+  technicalCompetencies String        @default("[]") // JSON string
+  behavioralCompetencies String       @default("[]") // JSON string
+  createdAt             DateTime      @default(now())
+
+  interviews Interview[]
+}
+
+model Interview {
+  id               String          @id @default(cuid())
+  userId           String
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orgId            String?
+  organization     Organization?   @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  jobDescriptionId String?
+  jobDescription   JobDescription? @relation(fields: [jobDescriptionId], references: [id], onDelete: SetNull)
+  resumeId         String?
+  resume           Resume?         @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  projectId        String?
+  project          Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  title            String          @default("AI Technical Interview")
+  role             String          @default("Full Stack Engineer")
+  interviewType    String          @default("TECHNICAL") // TECHNICAL, CODING, BEHAVIORAL, HR, HIRING_MANAGER, PROJECT_DEFENSE, SYSTEM_DESIGN, PANEL, STRESS, CASE, EXECUTIVE
+  durationMinutes  Int             @default(30)
+  difficulty       String          @default("ADAPTIVE") // EASY, MEDIUM, HARD, ADAPTIVE
+  interviewerStyle String          @default("PROFESSIONAL") // FRIENDLY, PROFESSIONAL, SKEPTICAL, DIRECT, EXECUTIVE, PANEL
+  status           String          @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, PAUSED, COMPLETED, CANCELLED
+  blueprint        String          @default("{}") // JSON string
+  currentStageIndex Int            @default(0)
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime        @default(now())
+
+  stages           InterviewStage[]
+  questions        InterviewQuestion[]
+  answers          InterviewAnswer[]
+  events           InterviewEvent[]
+  claims           CandidateClaim[]
+  evidence         Evidence[]
+  skillAssessments SkillAssessment[]
+  report           InterviewReport?
+  trainingPlans    TrainingPlan[]
+  usageRecords     UsageRecord[]
+}
+
+model InterviewStage {
+  id            String    @id @default(cuid())
+  interviewId   String
+  interview     Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  name          String
+  order         Int
+  targetMinutes Int       @default(5)
+  status        String    @default("PENDING") // PENDING, ACTIVE, COMPLETED
+  summary       String    @default("")
+
+  questions InterviewQuestion[]
+}
+
+model InterviewQuestion {
+  id               String          @id @default(cuid())
+  interviewId      String
+  interview        Interview       @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  stageId          String?
+  stage            InterviewStage? @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  objective        String
+  questionText     String
+  difficulty       String          @default("MEDIUM")
+  followUpReason   String          @default("")
+  expectedEvidence String          @default("[]") // JSON string array
+  order            Int             @default(1)
+  createdAt        DateTime        @default(now())
+
+  answers InterviewAnswer[]
+}
+
+model InterviewAnswer {
+  id              String            @id @default(cuid())
+  interviewId     String
+  interview       Interview         @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  questionId      String
+  question        InterviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  transcriptText  String
+  durationSeconds Int               @default(0)
+  audioUrl        String            @default("")
+  analysis        String            @default("{}") // JSON string: { correctness, depth, communication, edgeCases }
+  createdAt       DateTime          @default(now())
+}
+
+model InterviewEvent {
+  id          String    @id @default(cuid())
+  interviewId String
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  eventType   String // INTERVIEW_STARTED, QUESTION_GENERATED, QUESTION_SPOKEN, CANDIDATE_STARTED_SPEAKING, CANDIDATE_FINISHED_SPEAKING, FOLLOW_UP_GENERATED, INTERRUPTION, CLAIM_DETECTED, CODE_STARTED, CODE_EXECUTED, SCREEN_SHARED, INTERVIEW_PAUSED, INTERVIEW_RESUMED, INTERVIEW_COMPLETED, REPORT_GENERATED, HUMAN_TAKEOVER
+  payload     String    @default("{}") // JSON string
+  timestamp   DateTime  @default(now())
+}
+
+model CandidateClaim {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interviewId   String?
+  interview     Interview? @relation(fields: [interviewId], references: [id], onDelete: SetNull)
+  claimText     String
+  domain        String    @default("GENERAL")
+  source        String    @default("RESUME") // RESUME, GITHUB, INTERVIEW_ANSWER
+  status        String    @default("UNTESTED") // UNTESTED, VERIFIED, CHALLENGED, UNSUPPORTED
+  evidenceNotes String    @default("")
+  createdAt     DateTime  @default(now())
+
+  evidence Evidence[]
+}
+
+model Evidence {
+  id              String          @id @default(cuid())
+  interviewId     String
+  interview       Interview       @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  claimId         String?
+  claim           CandidateClaim? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+  type            String          @default("QUOTE") // CODE, QUOTE, TRANSCRIPT_SNIPPET, DIAGRAM
+  content         String
+  context         String          @default("")
+  timestamp       DateTime        @default(now())
+  confidenceScore Float           @default(0.85)
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String   @default("PROGRAMMING") // PROGRAMMING, SYSTEM_DESIGN, DATA_ML, BEHAVIORAL, DEVOPS
+  assessments SkillAssessment[]
+}
+
+model SkillAssessment {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillId          String
+  skill            Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  interviewId      String?
+  interview        Interview? @relation(fields: [interviewId], references: [id], onDelete: SetNull)
+  proficiencyLevel String    @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
+  evidenceCount    Int       @default(1)
+  lastAssessedAt   DateTime  @default(now())
+  notes            String    @default("")
+}
+
+model InterviewReport {
+  id                          String    @id @default(cuid())
+  interviewId                 String    @unique
+  interview                   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  overallSummary              String
+  technicalEvidence           String    @default("[]") // JSON string array of evidence items
+  gaps                        String    @default("[]") // JSON string array of gap items
+  communicationObservations   String    @default("{}") // JSON string
+  problemSolvingObservations  String    @default("{}") // JSON string
+  projectDepthObservations    String    @default("{}") // JSON string
+  behavioralObservations      String    @default("{}") // JSON string
+  questionBreakdown           String    @default("[]") // JSON string array
+  recommendations             String    @default("[]") // JSON string array
+  methodology                 String    @default("")
+  limitations                 String    @default("")
+  createdAt                   DateTime  @default(now())
+}
+
+model TrainingPlan {
+  id          String             @id @default(cuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interviewId String?
+  interview   Interview?         @relation(fields: [interviewId], references: [id], onDelete: SetNull)
+  title       String
+  summary     String
+  targetGaps  String             @default("[]") // JSON string
+  status      String             @default("ACTIVE") // ACTIVE, COMPLETED
+  createdAt   DateTime           @default(now())
+
+  exercises TrainingExercise[]
+}
+
+model TrainingExercise {
+  id             String       @id @default(cuid())
+  trainingPlanId String
+  trainingPlan   TrainingPlan @relation(fields: [trainingPlanId], references: [id], onDelete: Cascade)
+  title          String
+  exerciseType   String       @default("CONCEPT_LESSON") // CONCEPT_LESSON, TARGETED_DRILL, CODING_CHALLENGE, SYSTEM_DESIGN_CHALLENGE, RE_INTERVIEW
+  content        String
+  completed      Boolean      @default(false)
+  completedAt    DateTime?
+}
+
+model ProviderConfig {
+  id            String        @id @default(cuid())
+  orgId         String?
+  organization  Organization? @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  providerType  String // LLM, AVATAR, VOICE, STT, VISION, CODE_EXEC
+  providerName  String
+  apiKeyMasked  String        @default("")
+  settings      String        @default("{}") // JSON string
+  isActive      Boolean       @default(true)
+  isHealthy     Boolean       @default(true)
+  lastCheckedAt DateTime      @default(now())
+}
+
+model UsageRecord {
+  id          String        @id @default(cuid())
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orgId       String?
+  organization Organization? @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  interviewId String?
+  interview   Interview?    @relation(fields: [interviewId], references: [id], onDelete: SetNull)
+  metric      String // LLM_TOKENS, TTS_CHARS, STT_MINUTES, AVATAR_MINUTES, CODE_RUNS
+  quantity    Int           @default(0)
+  costUsd     Float         @default(0.0)
+  timestamp   DateTime      @default(now())
+}
+
+model AuditEvent {
+  id           String        @id @default(cuid())
+  userId       String?
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orgId        String?
+  organization Organization? @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  action       String
+  ipAddress    String        @default("")
+  userAgent    String        @default("")
+  details      String        @default("{}") // JSON string
+  timestamp    DateTime      @default(now())
+}

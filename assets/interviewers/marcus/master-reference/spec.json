@@ -1,0 +1,18 @@
+{
+  "id": "marcus",
+  "name": "Marcus Vance",
+  "gender": "male",
+  "role": "Senior Engineering Director",
+  "referenceImage": "assets/interviewers/marcus/master-reference/marcus_reference.jpg",
+  "visualSpecification": {
+    "age": 34,
+    "build": "Athletic, professional, upright executive posture",
+    "hair": "Short, groomed dark brown hair, neat corporate style",
+    "eyes": "Sharp hazel eyes, natural blink, direct focused eye contact",
+    "clothing": "Tailored navy corporate suit, crisp white dress shirt, patterned necktie, watch",
+    "environment": "Contemporary glass executive interview room, modern desk, soft bokeh office background",
+    "camera": "Fixed eye-level medium shot (head, shoulders, upper torso, hands visible on desk), 16:9 aspect ratio",
+    "lighting": "Soft natural key light with subtle rim lighting, professional corporate studio grade",
+    "movementGuidelines": "Restrained executive body language, authentic conversational lip motion, no exaggerated gestures, natural micro-saccades and breathing"
+  }
+}

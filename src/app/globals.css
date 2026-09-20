@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --primary: 238.7 83.5% 66.7%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+}
+
+body {
+  color: #f8fafc;
+  background-color: #020617;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Custom modern dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+.mirror {
+  transform: scaleX(-1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Lifelike Human Micro-Physics Animations */
+@keyframes humanBreathing {
+  0% { transform: translateY(0px) scale(1.0); }
+  50% { transform: translateY(-5px) scale(1.012); }
+  100% { transform: translateY(0px) scale(1.0); }
+}
+
+@keyframes humanSpeakingCadence {
+  0% { transform: translateY(0px) scale(1.0) rotate(0deg); }
+  25% { transform: translateY(-4px) scale(1.016) rotate(0.4deg); }
+  50% { transform: translateY(2px) scale(1.008) rotate(-0.3deg); }
+  75% { transform: translateY(-3px) scale(1.014) rotate(0.2deg); }
+  100% { transform: translateY(0px) scale(1.0) rotate(0deg); }
+}
+
+.animate-human-breathing {
+  animation: humanBreathing 3.6s ease-in-out infinite;
+}
+
+.animate-human-speaking {
+  animation: humanSpeakingCadence 2.0s ease-in-out infinite;
+}

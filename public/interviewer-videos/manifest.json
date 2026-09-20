@@ -1,0 +1,140 @@
+{
+  "marcus": {
+    "id": "marcus",
+    "name": "Marcus Vance",
+    "gender": "male",
+    "title": "Senior Engineering Director",
+    "clips": {
+      "idle": [
+        "/interviewer-videos/marcus/idle/idle_01.mp4",
+        "/interviewer-videos/marcus/idle/idle_02.mp4",
+        "/interviewer-videos/marcus/idle/idle_03.mp4"
+      ],
+      "listening": [
+        "/interviewer-videos/marcus/listening/listening_01.mp4",
+        "/interviewer-videos/marcus/listening/listening_02.mp4",
+        "/interviewer-videos/marcus/listening/listening_03.mp4",
+        "/interviewer-videos/marcus/listening/listening_04.mp4"
+      ],
+      "speaking": [
+        "/interviewer-videos/marcus/speaking/speaking_01.mp4",
+        "/interviewer-videos/marcus/speaking/speaking_02.mp4",
+        "/interviewer-videos/marcus/speaking/speaking_03.mp4",
+        "/interviewer-videos/marcus/speaking/speaking_04.mp4"
+      ],
+      "questioning": [
+        "/interviewer-videos/marcus/questioning/questioning_01.mp4",
+        "/interviewer-videos/marcus/questioning/questioning_02.mp4",
+        "/interviewer-videos/marcus/questioning/questioning_03.mp4"
+      ],
+      "thinking": [
+        "/interviewer-videos/marcus/thinking/thinking_01.mp4",
+        "/interviewer-videos/marcus/thinking/thinking_02.mp4",
+        "/interviewer-videos/marcus/thinking/thinking_03.mp4"
+      ],
+      "clarifying": [
+        "/interviewer-videos/marcus/clarifying/clarifying_01.mp4",
+        "/interviewer-videos/marcus/clarifying/clarifying_02.mp4"
+      ],
+      "challenging": [
+        "/interviewer-videos/marcus/challenging/challenging_01.mp4",
+        "/interviewer-videos/marcus/challenging/challenging_02.mp4",
+        "/interviewer-videos/marcus/challenging/challenging_03.mp4"
+      ],
+      "encouraging": [
+        "/interviewer-videos/marcus/encouraging/encouraging_01.mp4",
+        "/interviewer-videos/marcus/encouraging/encouraging_02.mp4"
+      ],
+      "acknowledging": [
+        "/interviewer-videos/marcus/acknowledging/acknowledging_01.mp4",
+        "/interviewer-videos/marcus/acknowledging/acknowledging_02.mp4",
+        "/interviewer-videos/marcus/acknowledging/acknowledging_03.mp4"
+      ],
+      "explaining": [
+        "/interviewer-videos/marcus/explaining/explaining_01.mp4",
+        "/interviewer-videos/marcus/explaining/explaining_02.mp4"
+      ],
+      "interrupting": [
+        "/interviewer-videos/marcus/interrupting/interrupting_01.mp4",
+        "/interviewer-videos/marcus/interrupting/interrupting_02.mp4"
+      ],
+      "transitioning": [
+        "/interviewer-videos/marcus/transitioning/transitioning_01.mp4",
+        "/interviewer-videos/marcus/transitioning/transitioning_02.mp4"
+      ],
+      "closing": [
+        "/interviewer-videos/marcus/closing/closing_01.mp4",
+        "/interviewer-videos/marcus/closing/closing_02.mp4"
+      ]
+    }
+  },
+  "elena": {
+    "id": "elena",
+    "name": "Elena Rostova",
+    "gender": "female",
+    "title": "VP of Engineering & Principal Technical Architect",
+    "clips": {
+      "idle": [
+        "/interviewer-videos/elena/idle/idle_01.mp4",
+        "/interviewer-videos/elena/idle/idle_02.mp4",
+        "/interviewer-videos/elena/idle/idle_03.mp4"
+      ],
+      "listening": [
+        "/interviewer-videos/elena/listening/listening_01.mp4",
+        "/interviewer-videos/elena/listening/listening_02.mp4",
+        "/interviewer-videos/elena/listening/listening_03.mp4",
+        "/interviewer-videos/elena/listening/listening_04.mp4"
+      ],
+      "speaking": [
+        "/interviewer-videos/elena/speaking/speaking_01.mp4",
+        "/interviewer-videos/elena/speaking/speaking_02.mp4",
+        "/interviewer-videos/elena/speaking/speaking_03.mp4",
+        "/interviewer-videos/elena/speaking/speaking_04.mp4"
+      ],
+      "questioning": [
+        "/interviewer-videos/elena/questioning/questioning_01.mp4",
+        "/interviewer-videos/elena/questioning/questioning_02.mp4",
+        "/interviewer-videos/elena/questioning/questioning_03.mp4"
+      ],
+      "thinking": [
+        "/interviewer-videos/elena/thinking/thinking_01.mp4",
+        "/interviewer-videos/elena/thinking/thinking_02.mp4",
+        "/interviewer-videos/elena/thinking/thinking_03.mp4"
+      ],
+      "clarifying": [
+        "/interviewer-videos/elena/clarifying/clarifying_01.mp4",
+        "/interviewer-videos/elena/clarifying/clarifying_02.mp4"
+      ],
+      "challenging": [
+        "/interviewer-videos/elena/challenging/challenging_01.mp4",
+        "/interviewer-videos/elena/challenging/challenging_02.mp4",
+        "/interviewer-videos/elena/challenging/challenging_03.mp4"
+      ],
+      "encouraging": [
+        "/interviewer-videos/elena/encouraging/encouraging_01.mp4",
+        "/interviewer-videos/elena/encouraging/encouraging_02.mp4"
+      ],
+      "acknowledging": [
+        "/interviewer-videos/elena/acknowledging/acknowledging_01.mp4",
+        "/interviewer-videos/elena/acknowledging/acknowledging_02.mp4",
+        "/interviewer-videos/elena/acknowledging/acknowledging_03.mp4"
+      ],
+      "explaining": [
+        "/interviewer-videos/elena/explaining/explaining_01.mp4",
+        "/interviewer-videos/elena/explaining/explaining_02.mp4"
+      ],
+      "interrupting": [
+        "/interviewer-videos/elena/interrupting/interrupting_01.mp4",
+        "/interviewer-videos/elena/interrupting/interrupting_02.mp4"
+      ],
+      "transitioning": [
+        "/interviewer-videos/elena/transitioning/transitioning_01.mp4",
+        "/interviewer-videos/elena/transitioning/transitioning_02.mp4"
+      ],
+      "closing": [
+        "/interviewer-videos/elena/closing/closing_01.mp4",
+        "/interviewer-videos/elena/closing/closing_02.mp4"
+      ]
+    }
+  }
+}

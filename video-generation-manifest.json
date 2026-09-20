@@ -1,0 +1,590 @@
+{
+  "model": "veo-3.1-generate-video",
+  "description": "Veo 3.1 Generation Manifest for Veyra AI Digital Human Interviewers",
+  "aspectRatio": "16:9",
+  "resolution": "1280x720",
+  "frameRate": 30,
+  "guidelines": [
+    "Photorealistic corporate interview scene",
+    "Fixed eye-level medium camera shot",
+    "Head, shoulders, upper torso, and hands visible",
+    "No camera movement, cuts, text, subtitles, or logos",
+    "No audible dialogue in video; genuine conversational human behavior only"
+  ],
+  "interviewers": {
+    "marcus": {
+      "referenceImage": "assets/interviewers/marcus/master-reference/marcus_reference.jpg",
+      "clothing": "Tailored navy corporate suit, white shirt, necktie, watch",
+      "environment": "Modern executive boardroom desk, glass office bokeh background",
+      "jobs": [
+        {
+          "clipId": "marcus_idle_01",
+          "category": "idle",
+          "filename": "/interviewer-videos/marcus/idle/idle_01.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: idle (idle behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_idle_02",
+          "category": "idle",
+          "filename": "/interviewer-videos/marcus/idle/idle_02.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: idle (idle behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_idle_03",
+          "category": "idle",
+          "filename": "/interviewer-videos/marcus/idle/idle_03.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: idle (idle behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_listening_01",
+          "category": "listening",
+          "filename": "/interviewer-videos/marcus/listening/listening_01.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: listening (listening behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_listening_02",
+          "category": "listening",
+          "filename": "/interviewer-videos/marcus/listening/listening_02.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: listening (listening behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_listening_03",
+          "category": "listening",
+          "filename": "/interviewer-videos/marcus/listening/listening_03.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: listening (listening behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_listening_04",
+          "category": "listening",
+          "filename": "/interviewer-videos/marcus/listening/listening_04.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: listening (listening behavior, variation 04). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_speaking_01",
+          "category": "speaking",
+          "filename": "/interviewer-videos/marcus/speaking/speaking_01.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: speaking (speaking behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_speaking_02",
+          "category": "speaking",
+          "filename": "/interviewer-videos/marcus/speaking/speaking_02.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: speaking (speaking behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_speaking_03",
+          "category": "speaking",
+          "filename": "/interviewer-videos/marcus/speaking/speaking_03.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: speaking (speaking behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_speaking_04",
+          "category": "speaking",
+          "filename": "/interviewer-videos/marcus/speaking/speaking_04.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: speaking (speaking behavior, variation 04). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_questioning_01",
+          "category": "questioning",
+          "filename": "/interviewer-videos/marcus/questioning/questioning_01.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: questioning (questioning behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_questioning_02",
+          "category": "questioning",
+          "filename": "/interviewer-videos/marcus/questioning/questioning_02.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: questioning (questioning behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_questioning_03",
+          "category": "questioning",
+          "filename": "/interviewer-videos/marcus/questioning/questioning_03.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: questioning (questioning behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_thinking_01",
+          "category": "thinking",
+          "filename": "/interviewer-videos/marcus/thinking/thinking_01.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: thinking (thinking behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_thinking_02",
+          "category": "thinking",
+          "filename": "/interviewer-videos/marcus/thinking/thinking_02.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: thinking (thinking behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_thinking_03",
+          "category": "thinking",
+          "filename": "/interviewer-videos/marcus/thinking/thinking_03.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: thinking (thinking behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_clarifying_01",
+          "category": "clarifying",
+          "filename": "/interviewer-videos/marcus/clarifying/clarifying_01.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: clarifying (clarifying behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_clarifying_02",
+          "category": "clarifying",
+          "filename": "/interviewer-videos/marcus/clarifying/clarifying_02.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: clarifying (clarifying behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_challenging_01",
+          "category": "challenging",
+          "filename": "/interviewer-videos/marcus/challenging/challenging_01.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: challenging (challenging behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_challenging_02",
+          "category": "challenging",
+          "filename": "/interviewer-videos/marcus/challenging/challenging_02.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: challenging (challenging behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_challenging_03",
+          "category": "challenging",
+          "filename": "/interviewer-videos/marcus/challenging/challenging_03.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: challenging (challenging behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_encouraging_01",
+          "category": "encouraging",
+          "filename": "/interviewer-videos/marcus/encouraging/encouraging_01.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: encouraging (encouraging behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_encouraging_02",
+          "category": "encouraging",
+          "filename": "/interviewer-videos/marcus/encouraging/encouraging_02.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: encouraging (encouraging behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_acknowledging_01",
+          "category": "acknowledging",
+          "filename": "/interviewer-videos/marcus/acknowledging/acknowledging_01.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: acknowledging (acknowledging behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_acknowledging_02",
+          "category": "acknowledging",
+          "filename": "/interviewer-videos/marcus/acknowledging/acknowledging_02.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: acknowledging (acknowledging behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_acknowledging_03",
+          "category": "acknowledging",
+          "filename": "/interviewer-videos/marcus/acknowledging/acknowledging_03.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: acknowledging (acknowledging behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_explaining_01",
+          "category": "explaining",
+          "filename": "/interviewer-videos/marcus/explaining/explaining_01.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: explaining (explaining behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_explaining_02",
+          "category": "explaining",
+          "filename": "/interviewer-videos/marcus/explaining/explaining_02.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: explaining (explaining behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_interrupting_01",
+          "category": "interrupting",
+          "filename": "/interviewer-videos/marcus/interrupting/interrupting_01.mp4",
+          "durationSeconds": 5,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: interrupting (interrupting behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_interrupting_02",
+          "category": "interrupting",
+          "filename": "/interviewer-videos/marcus/interrupting/interrupting_02.mp4",
+          "durationSeconds": 5,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: interrupting (interrupting behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_transitioning_01",
+          "category": "transitioning",
+          "filename": "/interviewer-videos/marcus/transitioning/transitioning_01.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: transitioning (transitioning behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_transitioning_02",
+          "category": "transitioning",
+          "filename": "/interviewer-videos/marcus/transitioning/transitioning_02.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: transitioning (transitioning behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_closing_01",
+          "category": "closing",
+          "filename": "/interviewer-videos/marcus/closing/closing_01.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: closing (closing behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "marcus_closing_02",
+          "category": "closing",
+          "filename": "/interviewer-videos/marcus/closing/closing_02.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Marcus Vance, adult male executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: closing (closing behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        }
+      ]
+    },
+    "elena": {
+      "referenceImage": "assets/interviewers/elena/master-reference/elena_reference.jpg",
+      "clothing": "Charcoal tailored blazer, cream silk blouse, delicate necklace",
+      "environment": "Minimalist modern glass tech office, executive desk",
+      "jobs": [
+        {
+          "clipId": "elena_idle_01",
+          "category": "idle",
+          "filename": "/interviewer-videos/elena/idle/idle_01.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: idle (idle behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_idle_02",
+          "category": "idle",
+          "filename": "/interviewer-videos/elena/idle/idle_02.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: idle (idle behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_idle_03",
+          "category": "idle",
+          "filename": "/interviewer-videos/elena/idle/idle_03.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: idle (idle behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_listening_01",
+          "category": "listening",
+          "filename": "/interviewer-videos/elena/listening/listening_01.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: listening (listening behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_listening_02",
+          "category": "listening",
+          "filename": "/interviewer-videos/elena/listening/listening_02.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: listening (listening behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_listening_03",
+          "category": "listening",
+          "filename": "/interviewer-videos/elena/listening/listening_03.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: listening (listening behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_listening_04",
+          "category": "listening",
+          "filename": "/interviewer-videos/elena/listening/listening_04.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: listening (listening behavior, variation 04). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_speaking_01",
+          "category": "speaking",
+          "filename": "/interviewer-videos/elena/speaking/speaking_01.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: speaking (speaking behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_speaking_02",
+          "category": "speaking",
+          "filename": "/interviewer-videos/elena/speaking/speaking_02.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: speaking (speaking behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_speaking_03",
+          "category": "speaking",
+          "filename": "/interviewer-videos/elena/speaking/speaking_03.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: speaking (speaking behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_speaking_04",
+          "category": "speaking",
+          "filename": "/interviewer-videos/elena/speaking/speaking_04.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: speaking (speaking behavior, variation 04). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_questioning_01",
+          "category": "questioning",
+          "filename": "/interviewer-videos/elena/questioning/questioning_01.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: questioning (questioning behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_questioning_02",
+          "category": "questioning",
+          "filename": "/interviewer-videos/elena/questioning/questioning_02.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: questioning (questioning behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_questioning_03",
+          "category": "questioning",
+          "filename": "/interviewer-videos/elena/questioning/questioning_03.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: questioning (questioning behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_thinking_01",
+          "category": "thinking",
+          "filename": "/interviewer-videos/elena/thinking/thinking_01.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: thinking (thinking behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_thinking_02",
+          "category": "thinking",
+          "filename": "/interviewer-videos/elena/thinking/thinking_02.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: thinking (thinking behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_thinking_03",
+          "category": "thinking",
+          "filename": "/interviewer-videos/elena/thinking/thinking_03.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: thinking (thinking behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_clarifying_01",
+          "category": "clarifying",
+          "filename": "/interviewer-videos/elena/clarifying/clarifying_01.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: clarifying (clarifying behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_clarifying_02",
+          "category": "clarifying",
+          "filename": "/interviewer-videos/elena/clarifying/clarifying_02.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: clarifying (clarifying behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_challenging_01",
+          "category": "challenging",
+          "filename": "/interviewer-videos/elena/challenging/challenging_01.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: challenging (challenging behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_challenging_02",
+          "category": "challenging",
+          "filename": "/interviewer-videos/elena/challenging/challenging_02.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: challenging (challenging behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_challenging_03",
+          "category": "challenging",
+          "filename": "/interviewer-videos/elena/challenging/challenging_03.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: challenging (challenging behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_encouraging_01",
+          "category": "encouraging",
+          "filename": "/interviewer-videos/elena/encouraging/encouraging_01.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: encouraging (encouraging behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_encouraging_02",
+          "category": "encouraging",
+          "filename": "/interviewer-videos/elena/encouraging/encouraging_02.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: encouraging (encouraging behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_acknowledging_01",
+          "category": "acknowledging",
+          "filename": "/interviewer-videos/elena/acknowledging/acknowledging_01.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: acknowledging (acknowledging behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_acknowledging_02",
+          "category": "acknowledging",
+          "filename": "/interviewer-videos/elena/acknowledging/acknowledging_02.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: acknowledging (acknowledging behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_acknowledging_03",
+          "category": "acknowledging",
+          "filename": "/interviewer-videos/elena/acknowledging/acknowledging_03.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: acknowledging (acknowledging behavior, variation 03). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_explaining_01",
+          "category": "explaining",
+          "filename": "/interviewer-videos/elena/explaining/explaining_01.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: explaining (explaining behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_explaining_02",
+          "category": "explaining",
+          "filename": "/interviewer-videos/elena/explaining/explaining_02.mp4",
+          "durationSeconds": 8,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: explaining (explaining behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_interrupting_01",
+          "category": "interrupting",
+          "filename": "/interviewer-videos/elena/interrupting/interrupting_01.mp4",
+          "durationSeconds": 5,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: interrupting (interrupting behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_interrupting_02",
+          "category": "interrupting",
+          "filename": "/interviewer-videos/elena/interrupting/interrupting_02.mp4",
+          "durationSeconds": 5,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: interrupting (interrupting behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_transitioning_01",
+          "category": "transitioning",
+          "filename": "/interviewer-videos/elena/transitioning/transitioning_01.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: transitioning (transitioning behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_transitioning_02",
+          "category": "transitioning",
+          "filename": "/interviewer-videos/elena/transitioning/transitioning_02.mp4",
+          "durationSeconds": 6,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: transitioning (transitioning behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_closing_01",
+          "category": "closing",
+          "filename": "/interviewer-videos/elena/closing/closing_01.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: closing (closing behavior, variation 01). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        },
+        {
+          "clipId": "elena_closing_02",
+          "category": "closing",
+          "filename": "/interviewer-videos/elena/closing/closing_02.mp4",
+          "durationSeconds": 7,
+          "prompt": "Photorealistic 8k video of Elena Rostova, adult female executive interviewer seated at modern boardroom desk in 16:9 medium shot. Action: closing (closing behavior, variation 02). Natural blinking, realistic breathing, authentic conversational eye contact and subtle restrained body language. No audible dialogue, no camera cuts, no zoom, no text.",
+          "negativePrompt": "cartoon, 3d render, cgi, anime, extra fingers, malformed hands, distorted eyes, gaping mouth, singing, camera movement, cuts, zoom, subtitles, watermarks"
+        }
+      ]
+    }
+  }
+}

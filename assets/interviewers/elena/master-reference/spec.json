@@ -1,0 +1,18 @@
+{
+  "id": "elena",
+  "name": "Elena Rostova",
+  "gender": "female",
+  "role": "VP of Engineering & Principal Technical Architect",
+  "referenceImage": "assets/interviewers/elena/master-reference/elena_reference.jpg",
+  "visualSpecification": {
+    "age": 30,
+    "build": "Poised, confident, articulate executive demeanor",
+    "hair": "Dark brown shoulder-length wavy hair, professional parted style",
+    "eyes": "Attentive hazel-brown eyes, natural blink, engaging direct eye contact",
+    "clothing": "Charcoal tailored blazer, cream silk blouse, subtle delicate necklace",
+    "environment": "Minimalist modern glass tech headquarters, executive conference desk, soft bokeh office background",
+    "camera": "Fixed eye-level medium shot (head, shoulders, upper torso, hands visible on desk), 16:9 aspect ratio",
+    "lighting": "Soft diffused natural office lighting with warm ambient fill, corporate studio grade",
+    "movementGuidelines": "Thoughtful architectural inquiry expressions, natural subtle speaking lip motion, restrained explanatory hand gestures, no exaggerated movements"
+  }
+}
