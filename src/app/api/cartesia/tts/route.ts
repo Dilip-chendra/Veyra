@@ -20,21 +20,24 @@ import {
 export const runtime = "nodejs"; // Required for fetch streaming
 
 export async function POST(req: NextRequest) {
-  // Auth check — only authenticated users can speak
   const session = await getSessionFromRequest(req);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   let text: string;
   let gender: "male" | "female";
+  let isPreview = false;
 
   try {
     const body = await req.json();
     text = (body.text ?? "").trim();
     gender = body.gender === "male" ? "male" : "female";
+    isPreview = Boolean(body.isPreview);
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  // Require session unless this is a short preview request (max 150 chars)
+  if (!session && (!isPreview || text.length > 150)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (!text || text.length === 0) {

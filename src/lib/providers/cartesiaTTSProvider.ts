@@ -3,18 +3,18 @@
  * Reads CARTESIA_API_KEY from environment. Never call from client code.
  */
 
-export const CARTESIA_API_VERSION = "2026-08-14";
+export const CARTESIA_API_VERSION = "2024-06-10";
 export const CARTESIA_TTS_MODEL = "sonic-3.6";
 export const CARTESIA_STT_MODEL = "ink-2";
 export const CARTESIA_BASE_URL = "https://api.cartesia.ai";
 export const CARTESIA_WS_BASE_URL = "wss://api.cartesia.ai";
 
-/** Well-known Cartesia voice IDs for interviewer personas */
+/** Well-known verified Cartesia voice IDs for interviewer personas */
 export const CARTESIA_VOICE_IDS = {
-  // Marcus — male, authoritative engineering director voice
-  marcus: process.env.CARTESIA_MARCUS_VOICE_ID ?? "694f9389-aac1-45b6-b726-9d9369183238",
-  // Elena — female, clear technical architect voice
-  elena: process.env.CARTESIA_ELENA_VOICE_ID ?? "bf991597-6135-4318-b45f-3b23c0a12c2d",
+  // Marcus — Clarkson (Executive Tone, male, composed authority)
+  marcus: process.env.CARTESIA_MARCUS_VOICE_ID ?? "c0f43c66-9f21-4034-b485-8f1d3340d759",
+  // Elena — Morgan (Executive Expert, female, technical executive)
+  elena: process.env.CARTESIA_ELENA_VOICE_ID ?? "0ee8beaa-db49-4024-940d-c7ea09b590b3",
 } as const;
 
 /** TTS output format: raw PCM so browser AudioContext can decode it directly */

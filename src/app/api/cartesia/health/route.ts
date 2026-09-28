@@ -25,9 +25,7 @@ export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   const session = await getSessionFromRequest(req);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // Health check can be queried with or without active session
 
   const cartesiaApiKey = process.env.CARTESIA_API_KEY;
   if (!cartesiaApiKey) {

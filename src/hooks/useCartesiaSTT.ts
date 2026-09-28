@@ -239,8 +239,12 @@ export function useCartesiaSTT(options: UseCartesiaSTTOptions = {}): UseCartesia
       ws.send(pcm16.buffer);
     };
 
+    // Route processor to a muted gain node to prevent mic audio from echoing through speakers
+    const muteNode = ctx.createGain();
+    muteNode.gain.setValueAtTime(0, ctx.currentTime);
     source.connect(processor);
-    processor.connect(ctx.destination);
+    processor.connect(muteNode);
+    muteNode.connect(ctx.destination);
   }
 
   // Cleanup on unmount

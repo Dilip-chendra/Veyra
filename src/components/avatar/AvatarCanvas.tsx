@@ -1,5 +1,5 @@
 "use client";
 
-// AvatarCanvas — delegates directly to RealHumanVideoInterviewer
-export { RealHumanVideoInterviewer as AvatarCanvas } from "./RealHumanVideoInterviewer";
-export type { RealHumanVideoInterviewerProps as AvatarCanvasProps } from "./RealHumanVideoInterviewer";
+// AvatarCanvas — delegates directly to ProfessionalHumanInterviewer (Clean Professional Human Photograph)
+export { ProfessionalHumanInterviewer as AvatarCanvas } from "./ProfessionalHumanInterviewer";
+export type { ProfessionalHumanInterviewerProps as AvatarCanvasProps } from "./ProfessionalHumanInterviewer";

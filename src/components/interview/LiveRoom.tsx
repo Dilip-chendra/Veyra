@@ -634,25 +634,27 @@ export const LiveRoom: React.FC<LiveRoomProps> = ({
         </div>
       </footer>
 
-      {/* Web Audio VAD Engine */}
-      <div className="hidden">
-        <VoiceController
-          onCandidateSpeechEnd={handleCandidateAnswer}
-          onInterruptionDetected={handleInterruption}
-          isAiSpeaking={isAiSpeaking}
-          onAiSpeechEnd={() => {
-            setIsAiSpeaking(false);
-            setSpeechTextToPlay(null);
-            setBehaviorState("LISTENING");
-            setEmotion("attentive");
-            setGaze("CANDIDATE");
-          }}
-          onAnalyserReady={setAudioAnalyser}
-          speechTextToPlay={speechTextToPlay}
-          interviewerGender={gender}
-          onTriggerReplayRef={triggerReplayRef}
-        />
-      </div>
+      {/* Cartesia Realtime Audio & Speech Recognition HUD */}
+      {hasStartedSession && (
+        <div className="px-6 py-2 bg-slate-950/90 border-t border-slate-800/80 z-20">
+          <VoiceController
+            onCandidateSpeechEnd={handleCandidateAnswer}
+            onInterruptionDetected={handleInterruption}
+            isAiSpeaking={isAiSpeaking}
+            onAiSpeechEnd={() => {
+              setIsAiSpeaking(false);
+              setSpeechTextToPlay(null);
+              setBehaviorState("LISTENING");
+              setEmotion("attentive");
+              setGaze("CANDIDATE");
+            }}
+            onAnalyserReady={setAudioAnalyser}
+            speechTextToPlay={speechTextToPlay}
+            interviewerGender={gender}
+            onTriggerReplayRef={triggerReplayRef}
+          />
+        </div>
+      )}
 
       {/* Initial Autoplay Unlock Overlay (If session not started) */}
       {!hasStartedSession && (

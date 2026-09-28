@@ -1,5 +1,5 @@
 "use client";
 
-// PhotorealisticAvatar — exports RealHumanVideoInterviewer (Real Human Video Moments Engine)
-export { RealHumanVideoInterviewer as PhotorealisticAvatar } from "./RealHumanVideoInterviewer";
-export type { RealHumanVideoInterviewerProps as PhotorealisticAvatarProps } from "./RealHumanVideoInterviewer";
+// PhotorealisticAvatar — delegates directly to ProfessionalHumanInterviewer (Clean Professional Human Photograph)
+export { ProfessionalHumanInterviewer as PhotorealisticAvatar } from "./ProfessionalHumanInterviewer";
+export type { ProfessionalHumanInterviewerProps as PhotorealisticAvatarProps } from "./ProfessionalHumanInterviewer";

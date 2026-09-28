@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -27,46 +27,103 @@ export default function LandingPage() {
   const [heroGender, setHeroGender] = useState<"female" | "male">("female");
   const [isSpeakingDemo, setIsSpeakingDemo] = useState<boolean>(false);
 
-  const handlePlayVoiceDemo = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+
+  const handlePlayVoiceDemo = async () => {
+    // Cancel any previous speech
     try {
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.resume();
+      audioSourceRef.current?.stop();
     } catch {}
 
-    const utterance = new SpeechSynthesisUtterance(
+    const phrase =
       heroGender === "female"
-        ? "Welcome to Veyra. I conduct live, rigorous technical interviews with genuine conversation memory, active listening, and evidence-based scorecards. Let's begin."
-        : "Hello. I'm Marcus Vance. Today we will explore your system architecture, examine edge cases under load, and verify your implementation trade-offs."
-    );
-    utterance.lang = "en-US";
-    utterance.rate = 1.0;
-    utterance.volume = 1.0;
+        ? "Hello. I'm Elena. I'll be conducting your technical interview today. We'll explore your architectural choices, system design, and implementation depth."
+        : "Hello. I'm Marcus. I'll be conducting your technical interview today. We'll explore your system architecture, examine edge cases under load, and verify your implementation trade-offs.";
 
-    // Pick best voice if available
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) {
-      const match = voices.find(v =>
-        heroGender === "female"
-          ? v.name.toLowerCase().includes("jenny") || v.name.toLowerCase().includes("aria") || v.name.toLowerCase().includes("zira") || v.name.toLowerCase().includes("female")
-          : v.name.toLowerCase().includes("guy") || v.name.toLowerCase().includes("ryan") || v.name.toLowerCase().includes("david") || v.name.toLowerCase().includes("male")
-      );
-      if (match) utterance.voice = match;
-    }
-
-    (window as any).__landingUtterance = utterance;
-    utterance.onstart = () => setIsSpeakingDemo(true);
-    utterance.onend = () => {
-      setIsSpeakingDemo(false);
-      (window as any).__landingUtterance = null;
-    };
-    utterance.onerror = () => {
-      setIsSpeakingDemo(false);
-      (window as any).__landingUtterance = null;
-    };
+    setIsSpeakingDemo(true);
 
     try {
-      window.speechSynthesis.speak(utterance);
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioCtx({ sampleRate: 44100 });
+      }
+      if (audioContextRef.current.state === "suspended") {
+        await audioContextRef.current.resume();
+      }
+
+      const res = await fetch("/api/cartesia/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: phrase,
+          gender: heroGender,
+          isPreview: true,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Voice synthesis failed");
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("No stream");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+      const chunks: Uint8Array[] = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith("data:")) continue;
+          const jsonStr = trimmed.slice(5).trim();
+          if (!jsonStr || jsonStr === "[DONE]") continue;
+          try {
+            const ev = JSON.parse(jsonStr);
+            if (ev.data) {
+              const bin = atob(ev.data);
+              const b = new Uint8Array(bin.length);
+              for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+              chunks.push(b);
+            }
+          } catch {}
+        }
+      }
+
+      if (chunks.length > 0) {
+        const total = chunks.reduce((acc, c) => acc + c.length, 0);
+        const combined = new Uint8Array(total);
+        let off = 0;
+        for (const c of chunks) {
+          combined.set(c, off);
+          off += c.length;
+        }
+
+        const f32 = new Float32Array(combined.buffer, 0, Math.floor(combined.byteLength / 4));
+        const buf = audioContextRef.current.createBuffer(1, f32.length, 44100);
+        buf.getChannelData(0).set(f32);
+
+        const src = audioContextRef.current.createBufferSource();
+        src.buffer = buf;
+        src.connect(audioContextRef.current.destination);
+        audioSourceRef.current = src;
+
+        src.onended = () => {
+          setIsSpeakingDemo(false);
+          audioSourceRef.current = null;
+        };
+
+        src.start(0);
+      } else {
+        setIsSpeakingDemo(false);
+      }
     } catch {
       setIsSpeakingDemo(false);
     }
@@ -122,7 +179,7 @@ export default function LandingPage() {
               <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Photorealistic Adult Human
             </span>
             <span className="flex items-center gap-1.5 font-medium text-slate-300">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Natural Eye Contact & Blinking
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Cartesia Sonic-3.6 & Ink-2 Audio
             </span>
             <span className="flex items-center gap-1.5 font-medium text-slate-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Zero Canned Decision Trees

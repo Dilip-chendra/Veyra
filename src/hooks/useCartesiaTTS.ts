@@ -18,27 +18,32 @@ export interface UseCartesiaTTSReturn {
 }
 
 /**
- * useCartesiaTTS — Client-side hook for Cartesia Sonic-3.6 TTS.
+ * useCartesiaTTS — Realtime low-latency streaming TTS hook for Cartesia Sonic-3.6.
  *
- * Calls POST /api/cartesia/tts (our secure server proxy).
- * Server reads CARTESIA_API_KEY — key never reaches browser.
- * Streams raw PCM audio from Cartesia SSE → AudioContext for playback.
+ * Calls POST /api/cartesia/tts (server proxy).
+ * Streams SSE raw PCM chunks directly to Web Audio API AudioBufferSourceNodes,
+ * scheduling them seamlessly with nextPlayTime for immediate (~200ms) speech onset.
+ *
+ * Interruption: stop() immediately halts all scheduled audio buffers and aborts the stream.
  */
 export function useCartesiaTTS(onSpeechEnd?: () => void): UseCartesiaTTSReturn {
   const [status, setStatus] = useState<CartesiaTTSStatus>("idle");
   const [error, setError] = useState<string | null>(null);
 
   const audioContextRef = useRef<AudioContext | null>(null);
-  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+  const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isPlayingRef = useRef(false);
+  const onSpeechEndRef = useRef(onSpeechEnd);
+  onSpeechEndRef.current = onSpeechEnd;
 
   const isPlaying = status === "playing" || status === "loading";
 
-  // Ensure AudioContext is created (must happen after user gesture)
   const getAudioContext = useCallback(() => {
     if (!audioContextRef.current || audioContextRef.current.state === "closed") {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       audioContextRef.current = new AudioCtx({ sampleRate: 44100 });
     }
     if (audioContextRef.current.state === "suspended") {
@@ -48,32 +53,27 @@ export function useCartesiaTTS(onSpeechEnd?: () => void): UseCartesiaTTSReturn {
   }, []);
 
   const stop = useCallback(() => {
-    // Cancel any in-flight fetch
+    // 1. Abort in-flight fetch stream
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
 
-    // Stop any playing audio
-    try {
-      sourceNodeRef.current?.stop();
-    } catch {
-      // May throw if already stopped
+    // 2. Stop all scheduled audio buffers
+    for (const source of activeSourcesRef.current) {
+      try {
+        source.stop();
+        source.disconnect();
+      } catch {}
     }
-    sourceNodeRef.current = null;
+    activeSourcesRef.current = [];
     isPlayingRef.current = false;
     setStatus("stopped");
   }, []);
 
-  /**
-   * Parse Cartesia SSE response and play as audio.
-   * Cartesia TTS/SSE returns lines like:
-   *   data: {"type":"chunk","data":"<base64-encoded-audio>","done":false}
-   *   data: {"type":"done","done":true}
-   */
   const speak = useCallback(
     async (text: string, gender: "male" | "female") => {
       if (!text?.trim()) return;
 
-      // Stop any existing speech
+      // Stop any existing speech immediately
       stop();
 
       setStatus("loading");
@@ -96,9 +96,7 @@ export function useCartesiaTTS(onSpeechEnd?: () => void): UseCartesiaTTSReturn {
           try {
             const errorData = await response.json();
             errorMsg = errorData.error ?? errorMsg;
-          } catch {
-            // ignore parse error
-          }
+          } catch {}
           throw new Error(errorMsg);
         }
 
@@ -107,12 +105,14 @@ export function useCartesiaTTS(onSpeechEnd?: () => void): UseCartesiaTTSReturn {
         }
 
         const ctx = getAudioContext();
-        const audioChunks: Uint8Array[] = [];
-
-        // Read SSE stream and collect base64 audio chunks
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+
+        // Track timeline for seamless chunk scheduling
+        let nextPlayTime = ctx.currentTime + 0.05; // 50ms initial safety cushion
+        let chunksScheduled = 0;
+        let lastScheduledSource: AudioBufferSourceNode | null = null;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -120,10 +120,8 @@ export function useCartesiaTTS(onSpeechEnd?: () => void): UseCartesiaTTSReturn {
           if (!isPlayingRef.current) break; // Interrupted
 
           buffer += decoder.decode(value, { stream: true });
-
-          // Process complete SSE lines
           const lines = buffer.split("\n");
-          buffer = lines.pop() ?? ""; // Keep incomplete last line
+          buffer = lines.pop() ?? "";
 
           for (const line of lines) {
             const trimmed = line.trim();
@@ -139,18 +137,47 @@ export function useCartesiaTTS(onSpeechEnd?: () => void): UseCartesiaTTSReturn {
               };
 
               if (event.type === "chunk" && event.data) {
-                // Decode base64 audio data
+                // Decode base64 to PCM bytes
                 const binaryStr = atob(event.data);
                 const bytes = new Uint8Array(binaryStr.length);
                 for (let i = 0; i < binaryStr.length; i++) {
                   bytes[i] = binaryStr.charCodeAt(i);
                 }
-                audioChunks.push(bytes);
+
+                const sampleCount = Math.floor(bytes.byteLength / 4);
+                if (sampleCount > 0 && isPlayingRef.current) {
+                  const floatArray = new Float32Array(bytes.buffer, 0, sampleCount);
+                  const audioBuffer = ctx.createBuffer(1, floatArray.length, 44100);
+                  audioBuffer.getChannelData(0).set(floatArray);
+
+                  const source = ctx.createBufferSource();
+                  source.buffer = audioBuffer;
+                  source.connect(ctx.destination);
+
+                  // Schedule seamlessly
+                  const now = ctx.currentTime;
+                  const startTime = Math.max(now, nextPlayTime);
+                  source.start(startTime);
+                  nextPlayTime = startTime + audioBuffer.duration;
+
+                  activeSourcesRef.current.push(source);
+                  lastScheduledSource = source;
+                  chunksScheduled++;
+
+                  if (chunksScheduled === 1) {
+                    setStatus("playing");
+                  }
+
+                  // Cleanup completed source nodes
+                  source.onended = () => {
+                    activeSourcesRef.current = activeSourcesRef.current.filter((s) => s !== source);
+                  };
+                }
               }
 
               if (event.done === true) break;
             } catch {
-              // Skip malformed SSE lines
+              // Ignore malformed SSE lines
             }
           }
         }
@@ -160,44 +187,19 @@ export function useCartesiaTTS(onSpeechEnd?: () => void): UseCartesiaTTSReturn {
           return;
         }
 
-        if (audioChunks.length === 0) {
-          throw new Error("No audio data received from voice service.");
+        if (chunksScheduled === 0) {
+          throw new Error("No audio data received from Cartesia voice service.");
         }
 
-        // Concatenate all PCM chunks
-        const totalLength = audioChunks.reduce((acc, c) => acc + c.length, 0);
-        const combined = new Uint8Array(totalLength);
-        let offset = 0;
-        for (const chunk of audioChunks) {
-          combined.set(chunk, offset);
-          offset += chunk.length;
+        // Attach completion callback to the final scheduled audio chunk
+        if (lastScheduledSource) {
+          lastScheduledSource.onended = () => {
+            activeSourcesRef.current = [];
+            isPlayingRef.current = false;
+            setStatus("idle");
+            onSpeechEndRef.current?.();
+          };
         }
-
-        // Interpret as 32-bit float PCM (f32le, 44100Hz, mono)
-        const floatArray = new Float32Array(combined.buffer, combined.byteOffset, combined.byteLength / 4);
-        const audioBuffer = ctx.createBuffer(1, floatArray.length, 44100);
-        audioBuffer.getChannelData(0).set(floatArray);
-
-        if (!isPlayingRef.current) {
-          setStatus("stopped");
-          return;
-        }
-
-        // Play via AudioBufferSourceNode
-        const source = ctx.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(ctx.destination);
-        sourceNodeRef.current = source;
-
-        source.onended = () => {
-          isPlayingRef.current = false;
-          sourceNodeRef.current = null;
-          setStatus("idle");
-          onSpeechEnd?.();
-        };
-
-        setStatus("playing");
-        source.start(0);
       } catch (err: unknown) {
         if ((err as Error)?.name === "AbortError") {
           setStatus("stopped");
@@ -207,19 +209,21 @@ export function useCartesiaTTS(onSpeechEnd?: () => void): UseCartesiaTTSReturn {
         setError(message);
         setStatus("error");
         isPlayingRef.current = false;
-        // DO NOT fall back to browser TTS — show the real error
       }
     },
-    [getAudioContext, onSpeechEnd, stop]
+    [getAudioContext, stop]
   );
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
-      try {
-        sourceNodeRef.current?.stop();
-      } catch {}
+      for (const source of activeSourcesRef.current) {
+        try {
+          source.stop();
+        } catch {}
+      }
+      activeSourcesRef.current = [];
       audioContextRef.current?.close().catch(() => {});
     };
   }, []);

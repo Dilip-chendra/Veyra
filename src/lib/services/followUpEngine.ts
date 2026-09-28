@@ -121,10 +121,11 @@ export class FollowUpEngine {
       };
     }
 
-    // 3. Candidate gave a shallow or hand-wavy answer
+    // 3. Candidate gave a shallow or high-level answer
     if (evaluation.depth === "shallow") {
+      const detail = extractSpecificDetail(trimmed) || extractCoreTopic(trimmed);
       return {
-        followUpQuestion: `You touched on the high-level concept, but let's go a layer deeper. Walk me through the exact implementation mechanics: what happens under the hood when that executes?`,
+        followUpQuestion: `You touched on ${detail}, but let's go a layer deeper. Walk me through the exact implementation mechanics: what happens under the hood when that executes?`,
         objective: "probe_implementation_depth",
         difficulty: "MEDIUM",
         followUpReason: "Candidate provided high-level overview without concrete implementation mechanics",

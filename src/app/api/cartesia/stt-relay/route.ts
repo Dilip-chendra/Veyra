@@ -76,8 +76,8 @@ export async function GET(req: NextRequest) {
   const { createServer } = await import("http");
   const { WebSocketServer } = await import("ws");
 
-  // Build Cartesia STT WebSocket URL with API key
-  const cartesiaWsUrl = `${CARTESIA_WS_BASE_URL}/stt/turns/websocket?api_key=${encodeURIComponent(apiKey)}&model=${CARTESIA_STT_MODEL}&cartesia_version=${CARTESIA_API_VERSION}`;
+  // Build Cartesia STT WebSocket URL with API key and required parameters
+  const cartesiaWsUrl = `${CARTESIA_WS_BASE_URL}/stt/turns/websocket?api_key=${encodeURIComponent(apiKey)}&model=${CARTESIA_STT_MODEL}&cartesia_version=${CARTESIA_API_VERSION}&encoding=pcm_s16le&sample_rate=16000`;
 
   // This pattern works in Next.js with custom server or standalone mode
   // For standard Next.js dev mode we use the socket directly

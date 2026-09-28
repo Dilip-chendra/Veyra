@@ -20,7 +20,7 @@ const hostname = "localhost";
 const port = parseInt(process.env.PORT || "3000", 10);
 
 const CARTESIA_API_KEY = process.env.CARTESIA_API_KEY;
-const CARTESIA_API_VERSION = "2026-08-14";
+const CARTESIA_API_VERSION = "2024-06-10";
 const CARTESIA_STT_MODEL = "ink-2";
 const CARTESIA_WS_BASE_URL = "wss://api.cartesia.ai";
 
@@ -44,15 +44,15 @@ app.prepare().then(() => {
 
   httpServer.on("upgrade", (req, socket, head) => {
     const { pathname } = parse(req.url || "", true);
+    console.log("[Server Upgrade] pathname:", pathname);
 
     if (pathname !== "/api/cartesia/stt-relay") {
-      socket.destroy();
+      // Don't destroy if it's for HMR or other handlers; only destroy if not handled
       return;
     }
 
-    // Basic auth check: look for session cookie
-    // (In production you'd validate the session token here)
     wss.handleUpgrade(req, socket, head, (clientWs) => {
+      console.log("[Server Upgrade] wss.handleUpgrade succeeded, starting relay");
       handleSTTRelay(clientWs);
     });
   });
@@ -69,8 +69,8 @@ app.prepare().then(() => {
       return;
     }
 
-    // Connect to Cartesia Ink-2 STT WebSocket
-    const cartesiaWsUrl = `${CARTESIA_WS_BASE_URL}/stt/turns/websocket?api_key=${encodeURIComponent(CARTESIA_API_KEY)}&model=${CARTESIA_STT_MODEL}&cartesia_version=${CARTESIA_API_VERSION}`;
+    // Connect to Cartesia Ink-2 STT WebSocket with required encoding and sample_rate
+    const cartesiaWsUrl = `${CARTESIA_WS_BASE_URL}/stt/turns/websocket?api_key=${encodeURIComponent(CARTESIA_API_KEY)}&model=${CARTESIA_STT_MODEL}&cartesia_version=${CARTESIA_API_VERSION}&encoding=pcm_s16le&sample_rate=16000`;
 
     let cartesiaWs;
     try {
@@ -123,13 +123,18 @@ app.prepare().then(() => {
       }
     });
 
-    clientWs.on("close", () => {
-      cartesiaWs?.close();
+    clientWs.on("close", (code, reason) => {
+      console.log("[CartesiaSTTRelay] Client closed:", code, reason?.toString());
+      if (cartesiaWs && (cartesiaWs.readyState === NodeWS.OPEN || cartesiaWs.readyState === NodeWS.CONNECTING)) {
+        cartesiaWs.close();
+      }
     });
 
     clientWs.on("error", (err) => {
-      console.error("[CartesiaSTTRelay] Client error:", err.message);
-      cartesiaWs?.close();
+      console.log("[CartesiaSTTRelay] Client error:", err.message);
+      if (cartesiaWs && (cartesiaWs.readyState === NodeWS.OPEN || cartesiaWs.readyState === NodeWS.CONNECTING)) {
+        cartesiaWs.close();
+      }
     });
   }
 
