@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
+  const hasCartesia = Boolean(process.env.CARTESIA_API_KEY);
+  const marcusVoiceId = process.env.CARTESIA_MARCUS_VOICE_ID ?? "694f9389-aac1-45b6-b726-9d9369183238";
+  const elenaVoiceId = process.env.CARTESIA_ELENA_VOICE_ID ?? "bf991597-6135-4318-b45f-3b23c0a12c2d";
+
   return NextResponse.json({
     status: "HEALTHY",
     timestamp: new Date().toISOString(),
@@ -18,24 +22,34 @@ export async function GET() {
     },
     engines: {
       avatar: {
-        active: "REAL_HUMAN_VIDEO_STREAM",
-        resolution: "1280x720",
-        fps: 30,
+        active: "STATIC_HUMAN_PHOTO",
+        description: "Professional human photograph — Marcus Vance (male) or Elena Rostova (female)",
         status: "READY",
-        localNeuralDiffusion: {
-          available: false,
-          reason: "Local EchoMimicV3 / MuseTalk neural diffusion requires dedicated NVIDIA GPU with >= 12GB VRAM and CUDA.",
-          hardwareDetected: "AMD Radeon Integrated Graphics (512MB VRAM).",
-          fallbackActive: "High-Definition Real Human Video Motion Engine (Zero-Cost Local Mode)",
-        },
       },
       voice: {
-        active: "NEURAL_SYNTHESIS_AND_AUDIO_CONTEXT",
-        status: "READY",
+        active: hasCartesia ? "CARTESIA_SONIC_3_6" : "NOT_CONFIGURED",
+        status: hasCartesia ? "READY" : "ERROR",
+        model: "sonic-3.6",
         personas: {
-          female: "Elena Rostova (Natural clear female technical executive)",
-          male: "Marcus Vance (Natural deep male engineering director)",
+          male: {
+            name: "Marcus Vance",
+            voiceId: marcusVoiceId,
+            configured: hasCartesia,
+          },
+          female: {
+            name: "Elena Rostova",
+            voiceId: elenaVoiceId,
+            configured: hasCartesia,
+          },
         },
+        error: hasCartesia ? null : "CARTESIA_API_KEY not configured. Set it server-side in .env",
+      },
+      stt: {
+        active: hasCartesia ? "CARTESIA_INK_2" : "NOT_CONFIGURED",
+        status: hasCartesia ? "READY" : "ERROR",
+        model: "ink-2",
+        features: ["turn.start", "turn.update", "turn.eager_end", "turn.end"],
+        error: hasCartesia ? null : "CARTESIA_API_KEY not configured. Set it server-side in .env",
       },
       brain: {
         active: "VEYRA_ADAPTIVE_INTERVIEW_BRAIN",

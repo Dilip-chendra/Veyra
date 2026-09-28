@@ -89,15 +89,24 @@ export const RealHumanVideoInterviewer: React.FC<RealHumanVideoInterviewerProps>
     };
   }, [interviewerId]);
 
-  // 2. Synchronize Interviewer identity
+  // 2. Synchronize Interviewer identity AND immediately reload video for new persona
   useEffect(() => {
     videoManagerRef.current.setInterviewer(interviewerId);
     if (manifestData) {
       const clip = videoManagerRef.current.selectVideoClip(state, isAiSpeaking);
       setCurrentClipUrl(clip.url);
       setPreloadUrls(clip.preloads);
+      // Force-load the new persona clip into the currently active video slot
+      const activeEl =
+        activeSlot === "primary" ? videoPrimaryRef.current : videoSecondaryRef.current;
+      if (activeEl) {
+        activeEl.src = clip.url;
+        activeEl.load();
+        activeEl.play().catch(() => {});
+      }
     }
-  }, [interviewerId, manifestData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interviewerId]);
 
   // 3. React to State or Speaking Changes
   useEffect(() => {

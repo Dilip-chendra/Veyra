@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node --env-file=.env server.mjs",
+    "dev:next": "next dev",
     "build": "prisma generate && next build",
-    "start": "next start",
+    "start": "NODE_ENV=production node --env-file=.env server.mjs",
+    "start:next": "next start",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
@@ -14,6 +16,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@prisma/client": "^6.4.1",
+    "@types/ws": "^8.18.1",
     "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
     "jose": "^6.0.8",
@@ -24,6 +27,7 @@
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.0.2",
     "three": "^0.174.0",
+    "ws": "^8.22.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

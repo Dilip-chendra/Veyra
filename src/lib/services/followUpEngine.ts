@@ -169,8 +169,9 @@ export class FollowUpEngine {
 
     // 5. If strong and deep, increase complexity with extreme scaling constraint
     if (evaluation.depth === "deep" || evaluation.depth === "exceptional") {
+      const topic = extractCoreTopic(trimmed);
       return {
-        followUpQuestion: "Strong explanation. Now, let's stress-test that: suppose your active traffic scales by 10x overnight, and your primary database region suffers a complete network partition. How does your system respond?",
+        followUpQuestion: `Strong explanation. Now let's stress-test that: suppose your ${topic} scales by 10x overnight and your primary database region suffers a complete network partition. How does your system respond, and what specific degradation or fallback behavior does the user see?`,
         objective: "stress_test_extreme_scale_and_partition",
         difficulty: "HARD",
         followUpReason: "Candidate demonstrated solid baseline competency; introducing advanced distributed failure scenario",
@@ -179,14 +180,63 @@ export class FollowUpEngine {
       };
     }
 
-    // Default adaptive follow-up
+    // Default adaptive follow-up — extract meaningful topic from answer
+    const topic = extractCoreTopic(trimmed);
+    const specificDetail = extractSpecificDetail(trimmed);
+
     return {
-      followUpQuestion: "What failure modes have you observed with that approach in production, and how did your monitoring detect them before users were impacted?",
+      followUpQuestion: specificDetail
+        ? `You mentioned ${specificDetail} — what failure modes have you encountered with that in production, and how did your monitoring detect them before users were impacted?`
+        : `What were the most significant production failure modes you observed with ${topic}, and how did your alerting or tracing identify them before they escalated?`,
       objective: "probe_production_resilience",
       difficulty: "MEDIUM",
-      followUpReason: "Testing production operational readiness and observability",
+      followUpReason: "Testing production operational readiness and observability based on candidate's specific answer",
       expectedEvidence: ["Monitoring metrics", "Alert thresholds", "Post-mortem insight"],
       isChallenging: false,
     };
   }
+}
+
+/**
+ * Extracts the dominant technical topic from a candidate answer for contextual follow-up
+ */
+function extractCoreTopic(answer: string): string {
+  const lower = answer.toLowerCase();
+  const topics: [RegExp, string][] = [
+    [/microservice|service mesh|istio|envoy/i, "microservices architecture"],
+    [/kubernetes|k8s|helm|pod|deployment/i, "Kubernetes cluster"],
+    [/docker|container|image|registry/i, "containerized deployment"],
+    [/database|postgres|mysql|sql|mongo/i, "database layer"],
+    [/api|rest|graphql|grpc|endpoint/i, "API layer"],
+    [/auth|oauth|jwt|session|token/i, "authentication system"],
+    [/ci\/?cd|pipeline|jenkins|github action|deploy/i, "deployment pipeline"],
+    [/machine learning|ml|model|inference|training/i, "ML inference pipeline"],
+    [/search|elastic|solr|opensearch/i, "search infrastructure"],
+    [/message|pubsub|sns|sqs|rabbitmq/i, "message queue"],
+    [/storage|s3|blob|gcs|file/i, "storage layer"],
+    [/frontend|react|next|angular|vue/i, "frontend application"],
+  ];
+
+  for (const [pattern, label] of topics) {
+    if (pattern.test(lower)) return label;
+  }
+
+  // Extract the first noun-like phrase from the answer as fallback
+  const words = answer.trim().split(/\s+/).slice(0, 8).join(" ");
+  return `the approach you described (${words}...)`;
+}
+
+/**
+ * Extracts a specific detail the candidate mentioned (tech name, metric, method name)
+ */
+function extractSpecificDetail(answer: string): string | null {
+  // Extract technology names, metrics, or specific methods mentioned
+  const techMatch = answer.match(/\b(Redis|Kafka|Postgres|MySQL|MongoDB|DynamoDB|Cassandra|Elasticsearch|Nginx|HAProxy|gRPC|GraphQL|Terraform|Pulumi|Prometheus|Grafana|Datadog|PagerDuty|Sentry|OpenTelemetry|RabbitMQ|Celery|Airflow|dbt|Spark|Flink|Hadoop)\b/);
+  if (techMatch) return techMatch[1];
+
+  // Extract metric patterns like "99th percentile", "50ms latency", "10k RPS"
+  const metricMatch = answer.match(/\b(\d+(?:\.\d+)?(?:ms|s|%|k|M|GB|TB|RPS|QPS|TPS|rpm))\b/);
+  if (metricMatch) return `the ${metricMatch[1]} metric you cited`;
+
+  return null;
 }

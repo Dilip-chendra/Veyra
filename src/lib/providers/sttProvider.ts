@@ -1,5 +1,5 @@
 export interface STTProviderStatus {
-  provider: "web_speech_recognition" | "whisper_api" | "deepgram";
+  provider: "cartesia_ink" | "web_speech_recognition";
   isConfigured: boolean;
   isActive: boolean;
   statusMessage: string;
@@ -7,31 +7,22 @@ export interface STTProviderStatus {
 
 export class STTProviderService {
   public static getAvailableProviders(): STTProviderStatus[] {
-    const hasWhisper = Boolean(process.env.OPENAI_API_KEY);
-    const hasDeepgram = Boolean(process.env.DEEPGRAM_API_KEY);
+    const hasCartesia = Boolean(process.env.CARTESIA_API_KEY);
 
     return [
       {
+        provider: "cartesia_ink",
+        isConfigured: hasCartesia,
+        isActive: hasCartesia,
+        statusMessage: hasCartesia
+          ? "Active: Cartesia Ink-2 streaming STT with native turn detection."
+          : "Not configured: Set CARTESIA_API_KEY (server-side only) to enable.",
+      },
+      {
         provider: "web_speech_recognition",
         isConfigured: true,
-        isActive: !hasWhisper && !hasDeepgram,
-        statusMessage: "Active: Real-time browser speech recognition with partial transcript streaming & VAD.",
-      },
-      {
-        provider: "whisper_api",
-        isConfigured: hasWhisper,
-        isActive: hasWhisper,
-        statusMessage: hasWhisper
-          ? "Configured: OpenAI Whisper speech-to-text API."
-          : "This integration requires configuration (set OPENAI_API_KEY in environment or Settings).",
-      },
-      {
-        provider: "deepgram",
-        isConfigured: hasDeepgram,
-        isActive: false,
-        statusMessage: hasDeepgram
-          ? "Configured: Deepgram Nova-2 ultra-low latency streaming STT."
-          : "This integration requires configuration (set DEEPGRAM_API_KEY in environment or Settings).",
+        isActive: !hasCartesia,
+        statusMessage: "Fallback: Native browser speech recognition (not used when Cartesia is configured).",
       },
     ];
   }

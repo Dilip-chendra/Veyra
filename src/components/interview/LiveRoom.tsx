@@ -258,39 +258,46 @@ export const LiveRoom: React.FC<LiveRoomProps> = ({
     }
   };
 
-  // Stop all local media tracks (camera, screen, mic, speech audio)
+  // Stop all local media tracks (camera, screen, mic, Cartesia TTS/STT)
   const stopAllMediaTracks = () => {
     try {
       if (candidateVideoRef.current && candidateVideoRef.current.srcObject) {
         const stream = candidateVideoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach((track) => {
-          try {
-            track.stop();
-          } catch {}
+          try { track.stop(); } catch {}
         });
         candidateVideoRef.current.srcObject = null;
       }
       if (screenVideoRef.current && screenVideoRef.current.srcObject) {
         const stream = screenVideoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach((track) => {
-          try {
-            track.stop();
-          } catch {}
+          try { track.stop(); } catch {}
         });
         screenVideoRef.current.srcObject = null;
       }
       if (typeof window !== "undefined") {
-        const w = window as any;
+        const w = window as unknown as {
+          __veyraLocalMicStream?: MediaStream;
+          __veyraStopTTS?: () => void;
+          __veyraDisconnectSTT?: () => void;
+        };
+
+        // Stop mic stream
         if (w.__veyraLocalMicStream && typeof w.__veyraLocalMicStream.getTracks === "function") {
-          w.__veyraLocalMicStream.getTracks().forEach((track: any) => {
-            try {
-              track.stop();
-            } catch {}
+          w.__veyraLocalMicStream.getTracks().forEach((track) => {
+            try { track.stop(); } catch {}
           });
-          w.__veyraLocalMicStream = null;
+          w.__veyraLocalMicStream = undefined;
         }
-        if ("speechSynthesis" in window) {
-          window.speechSynthesis.cancel();
+
+        // Stop Cartesia TTS (audio playback)
+        if (typeof w.__veyraStopTTS === "function") {
+          try { w.__veyraStopTTS(); } catch {}
+        }
+
+        // Disconnect Cartesia STT WebSocket relay
+        if (typeof w.__veyraDisconnectSTT === "function") {
+          try { w.__veyraDisconnectSTT(); } catch {}
         }
       }
     } catch (e) {

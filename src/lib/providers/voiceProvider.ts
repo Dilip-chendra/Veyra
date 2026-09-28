@@ -1,5 +1,5 @@
 export interface VoiceProviderStatus {
-  provider: "web_speech_api" | "elevenlabs" | "openai_tts";
+  provider: "cartesia_sonic" | "web_speech_api";
   isConfigured: boolean;
   isActive: boolean;
   statusMessage: string;
@@ -7,31 +7,22 @@ export interface VoiceProviderStatus {
 
 export class VoiceProviderService {
   public static getAvailableProviders(): VoiceProviderStatus[] {
-    const hasElevenLabs = Boolean(process.env.ELEVENLABS_API_KEY);
-    const hasOpenAI = Boolean(process.env.OPENAI_API_KEY);
+    const hasCartesia = Boolean(process.env.CARTESIA_API_KEY);
 
     return [
       {
+        provider: "cartesia_sonic",
+        isConfigured: hasCartesia,
+        isActive: hasCartesia,
+        statusMessage: hasCartesia
+          ? "Active: Cartesia Sonic-3.6 neural voice streaming."
+          : "Not configured: Set CARTESIA_API_KEY (server-side only) to enable.",
+      },
+      {
         provider: "web_speech_api",
         isConfigured: true,
-        isActive: !hasElevenLabs && !hasOpenAI,
-        statusMessage: "Active: High-speed native browser speech synthesis with dynamic rate/pitch behavior modulation.",
-      },
-      {
-        provider: "elevenlabs",
-        isConfigured: hasElevenLabs,
-        isActive: hasElevenLabs,
-        statusMessage: hasElevenLabs
-          ? "Configured: ElevenLabs ultra-realistic neural speech stream."
-          : "This integration requires configuration (set ELEVENLABS_API_KEY in environment or Settings).",
-      },
-      {
-        provider: "openai_tts",
-        isConfigured: hasOpenAI,
-        isActive: false,
-        statusMessage: hasOpenAI
-          ? "Configured: OpenAI TTS-1 neural voice streaming."
-          : "This integration requires configuration (set OPENAI_API_KEY in environment or Settings).",
+        isActive: !hasCartesia,
+        statusMessage: "Fallback: Native browser speech synthesis (not used when Cartesia is configured).",
       },
     ];
   }
