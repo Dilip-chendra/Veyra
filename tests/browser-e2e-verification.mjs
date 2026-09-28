@@ -43,10 +43,10 @@ async function runBrowserVerification() {
     // TEST 1: REAL SIGNUP & LOGIN
     // -------------------------------------------------------------
     console.log('1. Navigating to Landing Page http://localhost:3000 ...');
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle2' });
+    await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
 
     console.log('2. Navigating to Signup Page...');
-    await page.goto('http://localhost:3000/signup', { waitUntil: 'networkidle2' });
+    await page.goto('http://localhost:3000/signup', { waitUntil: 'domcontentloaded' });
 
     const testEmail = `dilip_candidate_${Date.now()}@veyra.test`;
     console.log('3. Filling Signup Form:', testEmail);
@@ -65,7 +65,7 @@ async function runBrowserVerification() {
     // TEST 2: CONFIGURATION PAGE
     // -------------------------------------------------------------
     console.log('\n5. Navigating to Configure Interview (/interviews/new)...');
-    await page.goto('http://localhost:3000/interviews/new', { waitUntil: 'networkidle2' });
+    await page.goto('http://localhost:3000/interviews/new', { waitUntil: 'domcontentloaded' });
 
     console.log('Verifying UI elements on Configuration page:');
     // Check persona cards (Marcus and Elena)
@@ -81,16 +81,30 @@ async function runBrowserVerification() {
     // TEST 7: SELECT MARCUS & LAUNCH INTERVIEW
     // -------------------------------------------------------------
     console.log('\n6. Selecting Marcus Vance and submitting interview configuration...');
-    // Click on Marcus card via his avatar image
-    await page.waitForSelector('img[alt="Marcus Vance"]', { timeout: 5000 });
-    await page.click('img[alt="Marcus Vance"]');
-    await new Promise(r => setTimeout(r, 500));
+    await page.waitForSelector('button[data-testid="persona-marcus"]', { timeout: 10000 });
+    // Give React time to complete hydration on the client
+    await new Promise(r => setTimeout(r, 2000));
+
+    let marcusSelected = false;
+    for (let attempt = 1; attempt <= 10; attempt++) {
+      await page.click('button[data-testid="persona-marcus"]');
+      await new Promise(r => setTimeout(r, 600));
+      const summaryText = await page.evaluate(() => document.body.innerText);
+      if (summaryText.includes('Interviewer: Marcus Vance')) {
+        console.log(`Marcus successfully selected on attempt ${attempt}!`);
+        marcusSelected = true;
+        break;
+      }
+      console.log(`Attempt ${attempt}: Marcus not selected yet, retrying...`);
+    }
+    assert.ok(marcusSelected, 'Marcus Vance must be selected in UI summary');
 
     // Capture the create request
     let createRequestBody = null;
     page.on('request', (req) => {
       if (req.url().includes('/api/interviews/create') && req.method() === 'POST') {
         createRequestBody = req.postData();
+        console.log('CREATE REQUEST BODY:', createRequestBody);
       }
     });
 
@@ -120,9 +134,9 @@ async function runBrowserVerification() {
     console.log('Images loaded in Live Room:', liveImgSrcs);
 
     const hasInterviewerPhoto = liveImgSrcs.some(
-      (src) => src.includes('interviewer_male.jpg') || src.includes('interviewer_female.jpg')
+      (src) => src.includes('interviewer_male.jpg')
     );
-    assert.ok(hasInterviewerPhoto, 'Must display high-quality interviewer photograph');
+    assert.ok(hasInterviewerPhoto, 'Must display high-quality Marcus Vance interviewer photograph');
 
     // -------------------------------------------------------------
     // TEST 10 & 11: CLICK "BEGIN LIVE INTERVIEW" & VERIFY AUDIBLE QUESTION

@@ -70,7 +70,7 @@ export const Footer: React.FC = () => {
         <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
           <div>© {new Date().getFullYear()} Veyra Technologies Inc. All rights reserved. Zero fake data policy.</div>
           <div className="flex items-center gap-4">
-            <span>Production WebGL + Three.js Engine</span>
+            <span>Cartesia Sonic-3.6 Realtime Voice Core</span>
             <span>•</span>
             <span>Piston Sandbox Runtime</span>
             <span>•</span>

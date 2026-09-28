@@ -6,6 +6,8 @@ import { InterviewMemory } from '../src/lib/services/interviewMemory.ts';
 import { InterviewPlanner } from '../src/lib/services/interviewPlanner.ts';
 import { FollowUpEngine } from '../src/lib/services/followUpEngine.ts';
 import { JobDescriptionService } from '../src/lib/services/jobDescriptionService.ts';
+import { InterviewBrain } from '../src/lib/services/interviewBrain.ts';
+import { TrainingEngine } from '../src/lib/services/trainingEngine.ts';
 
 test('CandidateProfileService creates unified profile and computes JD gap map', () => {
   const profile = CandidateProfileService.buildUnifiedProfile(
@@ -199,3 +201,181 @@ test('FollowUpEngine covers 10 specialized categories', () => {
   const scaleFollowUp = FollowUpEngine.generateFollowUp('Explain partition', '...', deepEval);
   assert.strictEqual(scaleFollowUp.category, 'SCALE');
 });
+
+test('InterviewBrain natural multi-turn dialogue progression (Redis -> API responses -> I don\'t know)', () => {
+  const baseContext = {
+    interviewId: 'test_dialogue_1',
+    role: 'Backend Engineer',
+    interviewType: 'TECHNICAL',
+    durationMinutes: 30,
+    elapsedSeconds: 200,
+    currentStageIndex: 1,
+    stages: [],
+    candidateClaims: [],
+    history: [],
+    style: 'PROFESSIONAL',
+    difficulty: 'ADAPTIVE',
+    interviewerName: 'Marcus Vance',
+  };
+
+  // Turn 1: Candidate says "I used Redis."
+  const turn1 = InterviewBrain.processCandidateTurn('I used Redis.', baseContext);
+  assert.strictEqual(turn1.question, 'Okay. What exactly were you caching?');
+
+  // Turn 2: Candidate says "API responses."
+  const context2 = {
+    ...baseContext,
+    elapsedSeconds: 250,
+    history: [
+      { role: 'interviewer', text: 'Okay. What exactly were you caching?' },
+    ],
+  };
+  const turn2 = InterviewBrain.processCandidateTurn('API responses.', context2);
+  assert.strictEqual(turn2.question, 'What made caching those responses safe in your case?');
+
+  // Turn 3: Candidate says "I don't know."
+  const context3 = {
+    ...baseContext,
+    elapsedSeconds: 300,
+    history: [
+      { role: 'interviewer', text: 'What made caching those responses safe in your case?' },
+    ],
+  };
+  const turn3 = InterviewBrain.processCandidateTurn("I don't know.", context3);
+  assert.ok(turn3.question.includes('What could go wrong if the cached value becomes stale?'));
+});
+
+test('InterviewBrain candidate question handling (clarification, repeat, pause)', () => {
+  const baseContext = {
+    interviewId: 'test_questions_1',
+    role: 'System Architect',
+    interviewType: 'SYSTEM_DESIGN',
+    durationMinutes: 30,
+    elapsedSeconds: 300,
+    currentStageIndex: 1,
+    stages: [],
+    candidateClaims: [],
+    history: [
+      { role: 'interviewer', text: 'How would you partition the user feed database?' },
+    ],
+    style: 'PROFESSIONAL',
+    difficulty: 'ADAPTIVE',
+    interviewerName: 'Elena Rostova',
+  };
+
+  // 1. Clarification request
+  const clarTurn = InterviewBrain.processCandidateTurn('Can I clarify the requirement?', baseContext);
+  assert.ok(clarTurn.question.includes('ten million daily users'));
+
+  // 2. Repeat request
+  const repTurn = InterviewBrain.processCandidateTurn('Could you repeat the question?', baseContext);
+  assert.ok(repTurn.question.includes('How would you partition the user feed database?'));
+
+  // 3. Pause request
+  const pauseTurn = InterviewBrain.processCandidateTurn('Give me a moment to think.', baseContext);
+  assert.ok(pauseTurn.question.includes('Take your time'));
+  assert.strictEqual(pauseTurn.behavior.state, 'WAITING');
+});
+
+test('InterviewMemory 3-step ownership sequence', () => {
+  // Step 0 -> Step 1
+  const step0 = InterviewMemory.checkOwnershipProbeNeeded('We built a real-time event pipeline.', 0);
+  assert.strictEqual(step0.needsOwnershipProbe, true);
+  assert.ok(step0.probeQuestion.includes('Which specific part of that system did you personally design and implement?'));
+  assert.strictEqual(step0.nextStage, 1);
+
+  // Step 1 -> Step 2
+  const step1 = InterviewMemory.checkOwnershipProbeNeeded('I implemented the Kafka producer and partitioner.', 1);
+  assert.strictEqual(step1.needsOwnershipProbe, true);
+  assert.strictEqual(step1.probeQuestion, 'What was the hardest part of your contribution?');
+  assert.strictEqual(step1.nextStage, 2);
+
+  // Step 2 -> Step 3
+  const step2 = InterviewMemory.checkOwnershipProbeNeeded('Handling schema evolution without breaking downstream consumers.', 2);
+  assert.strictEqual(step2.needsOwnershipProbe, true);
+  assert.strictEqual(step2.probeQuestion, 'Why did you implement it that way?');
+  assert.strictEqual(step2.nextStage, 3);
+});
+
+test('InterviewMemory 3-step claim verification sequence', () => {
+  const claim = { claimText: 'Reduced latency by 40%', domain: 'Performance', source: 'RESUME', status: 'UNTESTED' };
+
+  // Step 0
+  const probe0 = InterviewMemory.checkClaimProbeNeeded(claim, 0);
+  assert.strictEqual(probe0.probeQuestion, 'How did you measure that 40%?');
+  assert.strictEqual(probe0.nextStage, 1);
+  assert.strictEqual(probe0.updatedStatus, 'PROBED');
+
+  // Step 1
+  const probe1 = InterviewMemory.checkClaimProbeNeeded(claim, 1);
+  assert.strictEqual(probe1.probeQuestion, 'What was your baseline?');
+  assert.strictEqual(probe1.nextStage, 2);
+
+  // Step 2
+  const probe2 = InterviewMemory.checkClaimProbeNeeded(claim, 2);
+  assert.strictEqual(probe2.probeQuestion, 'What optimization made the biggest difference?');
+  assert.strictEqual(probe2.nextStage, 3);
+  assert.strictEqual(probe2.updatedStatus, 'SUPPORTED_BY_ANSWER');
+});
+
+test('InterviewBrain whiteboard & coding integration', () => {
+  const baseContext = {
+    interviewId: 'test_integration_1',
+    role: 'Fullstack Engineer',
+    interviewType: 'SYSTEM_DESIGN',
+    durationMinutes: 30,
+    elapsedSeconds: 400,
+    currentStageIndex: 1,
+    stages: [],
+    candidateClaims: [],
+    history: [],
+    style: 'PROFESSIONAL',
+    difficulty: 'ADAPTIVE',
+    whiteboardState: {
+      nodes: [{ id: 'n1', label: 'Redis Cache', type: 'cache' }],
+      connections: [],
+    },
+  };
+
+  const wbTurn = InterviewBrain.processCandidateTurn('I have drawn the high-level architecture.', baseContext);
+  assert.ok(wbTurn.question.includes('What problem is it solving?'));
+
+  // Coding complexity follow-up
+  const codingContext = {
+    ...baseContext,
+    whiteboardState: null,
+    interviewType: 'CODING',
+    codeState: {
+      code: 'function twoSum(nums, target) { return []; }',
+      language: 'javascript',
+      hasErrors: false,
+    },
+  };
+  const codingTurn = InterviewBrain.processCandidateTurn('Here is my implementation.', codingContext);
+  assert.ok(codingTurn.question.includes('What is the time complexity'));
+});
+
+test('InterviewPlanner spoken stage transitions', () => {
+  const t1 = InterviewPlanner.getSpokenTransition('PROJECT', 'SYSTEM_DESIGN');
+  assert.ok(t1.includes("We've covered your project. I'd like to move into a system-design scenario now."));
+
+  const t2 = InterviewPlanner.getSpokenTransition('TECHNICAL', 'CODING');
+  assert.ok(t2.includes('switch over to the code editor'));
+
+  const t3 = InterviewPlanner.getSpokenTransition('BEHAVIORAL', 'CLOSING');
+  assert.ok(t3.includes('Before we wrap up, what questions do you have for me'));
+});
+
+test('TrainingEngine generates 5 structured remediation components', () => {
+  const plan = TrainingEngine.generateTrainingPlan('AI Engineer', [
+    { area: 'RAG evaluation', reason: 'Candidate did not cite retrieval evaluation metrics' },
+  ]);
+
+  assert.strictEqual(plan.exercises.length, 6); // 1 lesson, 5 questions drill, 2 code exercises, 1 design challenge, 1 re-interview
+  assert.ok(plan.exercises.some(e => e.exerciseType === 'CONCEPT_LESSON'));
+  assert.ok(plan.exercises.some(e => e.exerciseType === 'TARGETED_DRILL'));
+  assert.ok(plan.exercises.filter(e => e.exerciseType === 'CODING_CHALLENGE').length === 2);
+  assert.ok(plan.exercises.some(e => e.exerciseType === 'SYSTEM_DESIGN_CHALLENGE'));
+  assert.ok(plan.exercises.some(e => e.exerciseType === 'RE_INTERVIEW'));
+});
+

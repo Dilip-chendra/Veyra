@@ -6,9 +6,19 @@ import type {
 import type { CandidateGapItem } from "./candidateProfileService.ts";
 import type { ProjectDefenseItem } from "./projectDefenseService.ts";
 
+export type InterviewStageType =
+  | "INTRODUCTION"
+  | "RESUME"
+  | "PROJECT"
+  | "TECHNICAL"
+  | "CODING"
+  | "SYSTEM_DESIGN"
+  | "BEHAVIORAL"
+  | "CLOSING";
+
 export interface InterviewObjective {
   id: string;
-  category: "TECHNICAL_DEPTH" | "PROJECT_DEFENSE" | "SYSTEM_DESIGN" | "OWNERSHIP" | "BEHAVIORAL" | "CLOSING";
+  category: InterviewStageType | "TECHNICAL_DEPTH" | "PROJECT_DEFENSE" | "OWNERSHIP";
   title: string;
   targetCompetency: string;
   priority: "HIGH" | "MEDIUM" | "LOW";
@@ -179,5 +189,28 @@ export class InterviewPlanner {
       updatedObjectives: updated,
       difficultyLevel,
     };
+  }
+
+  /**
+   * Generates natural spoken transitions between interview stages.
+   * Example: "We've covered your project. I'd like to move into a system-design scenario now."
+   */
+  public static getSpokenTransition(fromStage: string, toStage: string): string {
+    if (fromStage === "PROJECT" && toStage === "SYSTEM_DESIGN") {
+      return "We've covered your project. I'd like to move into a system-design scenario now.";
+    }
+    if (fromStage === "TECHNICAL" && toStage === "CODING") {
+      return "That's great depth on the technical fundamentals. Let's switch over to the code editor for a live implementation challenge.";
+    }
+    if (fromStage === "CODING" && toStage === "SYSTEM_DESIGN") {
+      return "Nice work on that algorithm. Let's transition back to system-level architecture.";
+    }
+    if (fromStage === "SYSTEM_DESIGN" && toStage === "BEHAVIORAL") {
+      return "That gives me a solid picture of your architectural trade-offs. Let's shift gears to team collaboration and engineering ownership.";
+    }
+    if (toStage === "CLOSING") {
+      return "We've covered great ground today. Before we wrap up, what questions do you have for me about our engineering stack or team culture?";
+    }
+    return "";
   }
 }

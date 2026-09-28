@@ -24,10 +24,10 @@ async function runAIEngineerInterviewVerification() {
 
   try {
     console.log('1. Navigating to Landing Page http://localhost:3000 ...');
-    await page.goto(`${APP_URL}`, { waitUntil: 'networkidle2' });
+    await page.goto(`${APP_URL}`, { waitUntil: 'domcontentloaded' });
 
     console.log('2. Navigating to Signup Page...');
-    await page.goto(`${APP_URL}/signup`, { waitUntil: 'networkidle2' });
+    await page.goto(`${APP_URL}/signup`, { waitUntil: 'domcontentloaded' });
 
     const testEmail = `ai_engineer_${Date.now()}@veyra.test`;
     console.log(`3. Signing up candidate: ${testEmail}...`);
@@ -43,7 +43,7 @@ async function runAIEngineerInterviewVerification() {
 
     // 2. Configure Interview for AI Engineer
     console.log('3. Navigating to /interviews/new...');
-    await page.goto(`${APP_URL}/interviews/new`, { waitUntil: 'networkidle2' });
+    await page.goto(`${APP_URL}/interviews/new`, { waitUntil: 'domcontentloaded' });
 
     // Fill in AI Engineer role
     console.log('4. Configuring AI Engineer role and pasting resume...');

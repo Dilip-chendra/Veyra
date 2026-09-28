@@ -28,7 +28,7 @@ async function runElenaBrowserVerification() {
     // -------------------------------------------------------------
     const testEmail = `dilip_elena_${Date.now()}@veyra.test`;
     console.log(`1. Signing up candidate: ${testEmail}...`);
-    await page.goto(`${APP_URL}/signup`, { waitUntil: 'networkidle2' });
+    await page.goto(`${APP_URL}/signup`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('form input[type="text"]');
     await new Promise((r) => setTimeout(r, 1000));
     await page.type('input[type="text"]', 'Elena Candidate');
@@ -43,21 +43,13 @@ async function runElenaBrowserVerification() {
     // CONFIGURE INTERVIEW WITH ELENA ROSTOVA
     // -------------------------------------------------------------
     console.log('3. Navigating to /interviews/new...');
-    await page.goto(`${APP_URL}/interviews/new`, { waitUntil: 'networkidle2' });
+    await page.goto(`${APP_URL}/interviews/new`, { waitUntil: 'domcontentloaded' });
 
     console.log('4. Selecting Elena Rostova persona card...');
-    const clickedElena = await page.evaluate(() => {
-      const img = document.querySelector('img[alt="Elena Rostova"]');
-      if (img) {
-        const card = img.closest('.cursor-pointer') || img.parentElement;
-        if (card) {
-          card.click();
-          return true;
-        }
-      }
-      return false;
-    });
-    assert.ok(clickedElena, 'Must be able to click Elena Rostova card');
+    await page.waitForSelector('button[data-testid="persona-elena"]', { timeout: 5000 });
+    await page.click('button[data-testid="persona-elena"]');
+    console.log('Elena card clicked!');
+    await new Promise((r) => setTimeout(r, 1000));
 
     let createRequestBody = null;
     page.on('request', (req) => {

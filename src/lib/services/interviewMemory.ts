@@ -29,6 +29,10 @@ export interface InterviewMemoryState {
   technologies: TechnologyMention[];
   decisions: { decision: string; justification: string; turnIndex: number }[];
   ownershipStatements: { project: string; role: string; personalScope: string }[];
+  ownershipProbeStage: number;
+  claimProbeMap: Record<string, number>;
+  currentStage: "INTRODUCTION" | "RESUME" | "PROJECT" | "TECHNICAL" | "CODING" | "SYSTEM_DESIGN" | "BEHAVIORAL" | "CLOSING";
+  lastTopic: string;
   unresolvedGaps: string[];
   demonstratedStrengths: string[];
   askedQuestions: string[];
@@ -38,14 +42,13 @@ export interface InterviewMemoryState {
 
 export class InterviewMemory {
   private static readonly NATURAL_ACKNOWLEDGEMENTS = [
-    "Okay.",
     "Got it.",
     "That makes sense.",
+    "Okay, let's go deeper there.",
+    "That's useful context.",
     "Let's stay with that for a moment.",
     "Understood.",
     "Fair point.",
-    "Interesting.",
-    "Right.",
   ];
 
   /**
@@ -58,6 +61,10 @@ export class InterviewMemory {
         technologies: [],
         decisions: [],
         ownershipStatements: [],
+        ownershipProbeStage: 0,
+        claimProbeMap: {},
+        currentStage: "INTRODUCTION",
+        lastTopic: "",
         unresolvedGaps: [],
         demonstratedStrengths: [],
         askedQuestions: [],
@@ -72,6 +79,10 @@ export class InterviewMemory {
         technologies: parsed.technologies || [],
         decisions: parsed.decisions || [],
         ownershipStatements: parsed.ownershipStatements || [],
+        ownershipProbeStage: parsed.ownershipProbeStage || 0,
+        claimProbeMap: parsed.claimProbeMap || {},
+        currentStage: parsed.currentStage || "INTRODUCTION",
+        lastTopic: parsed.lastTopic || "",
         unresolvedGaps: parsed.unresolvedGaps || [],
         demonstratedStrengths: parsed.demonstratedStrengths || [],
         askedQuestions: parsed.askedQuestions || [],
@@ -84,6 +95,10 @@ export class InterviewMemory {
         technologies: [],
         decisions: [],
         ownershipStatements: [],
+        ownershipProbeStage: 0,
+        claimProbeMap: {},
+        currentStage: "INTRODUCTION",
+        lastTopic: "",
         unresolvedGaps: [],
         demonstratedStrengths: [],
         askedQuestions: [],
@@ -225,33 +240,113 @@ export class InterviewMemory {
 
   /**
    * Detects whether candidate answers with collective / passive phrasing ("we built", "we did")
-   * and provides a targeted ownership probe.
+   * and provides a targeted multi-turn ownership probe sequence:
+   * 1. What did you personally implement?
+   * 2. What was the hardest part of your contribution?
+   * 3. Why did you implement it that way?
    */
-  public static checkOwnershipProbeNeeded(candidateAnswer: string): {
+  public static checkOwnershipProbeNeeded(candidateAnswer: string, stage: number = 0): {
     needsOwnershipProbe: boolean;
     probeQuestion?: string;
+    nextStage: number;
   } {
     const trimmed = candidateAnswer.trim();
     const lower = trimmed.toLowerCase();
     const words = trimmed.split(/\s+/).length;
 
-    // Trigger if candidate uses collective pronouns heavily (> 2 times "we built / we implemented")
-    const collectiveMatches = lower.match(/\b(we built|we implemented|we designed|we created|our team|we deployed)\b/g);
-    if (collectiveMatches && collectiveMatches.length >= 2 && words >= 8) {
+    // Trigger if candidate uses collective pronouns
+    const collectiveMatches = lower.match(/\b(we built|we implemented|we designed|we created|our team|we deployed|we migrated)\b/g);
+    
+    if (stage === 0 && collectiveMatches && collectiveMatches.length >= 1 && words >= 3) {
       return {
         needsOwnershipProbe: true,
-        probeQuestion: "You mentioned what the team built overall. Which specific part of that system did you personally design and implement, and what was your individual contribution?",
+        probeQuestion: "You mentioned what the team built overall. Which specific part of that system did you personally design and implement?",
+        nextStage: 1,
       };
     }
 
-    return { needsOwnershipProbe: false };
+    if (stage === 1 && words >= 4) {
+      return {
+        needsOwnershipProbe: true,
+        probeQuestion: "What was the hardest part of your contribution?",
+        nextStage: 2,
+      };
+    }
+
+    if (stage === 2 && words >= 4) {
+      return {
+        needsOwnershipProbe: true,
+        probeQuestion: "Why did you implement it that way?",
+        nextStage: 3,
+      };
+    }
+
+    return { needsOwnershipProbe: false, nextStage: stage };
   }
 
   /**
-   * Selects a natural acknowledgement phrase that avoids robotic consecutive repetition.
+   * 3-Stage Claim Verification Engine:
+   * Probes quantified metrics (e.g. "Reduced latency by 40%"):
+   * 1. How did you measure that 40%?
+   * 2. What was your baseline?
+   * 3. What optimization made the biggest difference?
    */
-  public static selectAcknowledgement(memory: InterviewMemoryState): string {
-    const recent = memory.usedAcknowledgements.slice(-3);
+  public static checkClaimProbeNeeded(
+    claim: CandidateClaimData,
+    stage: number = 0
+  ): {
+    probeQuestion: string;
+    nextStage: number;
+    updatedStatus: "UNTESTED" | "PROBED" | "SUPPORTED_BY_ANSWER" | "UNRESOLVED" | "CONTRADICTORY";
+  } {
+    // Extract metric phrase from claimText if present
+    const metricMatch = claim.claimText.match(/\d+[%xXkKM]|\$\d+/);
+    const metricStr = metricMatch ? metricMatch[0] : "that improvement";
+
+    if (stage === 0) {
+      return {
+        probeQuestion: `How did you measure that ${metricStr}?`,
+        nextStage: 1,
+        updatedStatus: "PROBED",
+      };
+    }
+
+    if (stage === 1) {
+      return {
+        probeQuestion: "What was your baseline?",
+        nextStage: 2,
+        updatedStatus: "PROBED",
+      };
+    }
+
+    return {
+      probeQuestion: "What optimization made the biggest difference?",
+      nextStage: 3,
+      updatedStatus: "SUPPORTED_BY_ANSWER",
+    };
+  }
+
+  /**
+   * Selects a natural contextual acknowledgement phrase without robotic repetition.
+   */
+  public static selectAcknowledgement(memory: InterviewMemoryState, candidateAnswer: string = ""): string {
+    const lower = candidateAnswer.toLowerCase();
+    let preferred: string | null = null;
+
+    if (/because|trade-off|architecture|decision|instead/i.test(lower)) {
+      preferred = "That makes sense.";
+    } else if (/\d+[%xXkKM]|\$\d+|latency|throughput|benchmark/i.test(lower)) {
+      preferred = "That's useful context.";
+    } else if (candidateAnswer.trim().split(/\s+/).length <= 4 && candidateAnswer.trim().length > 0) {
+      preferred = "Okay, let's go deeper there.";
+    }
+
+    const recent = memory.usedAcknowledgements.slice(-2);
+    if (preferred && !recent.includes(preferred)) {
+      memory.usedAcknowledgements.push(preferred);
+      return preferred;
+    }
+
     const available = this.NATURAL_ACKNOWLEDGEMENTS.filter(a => !recent.includes(a));
     const chosen = available.length > 0
       ? available[Math.floor(Math.random() * available.length)]

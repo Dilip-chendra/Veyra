@@ -114,12 +114,13 @@ export default function InterviewReplayPage() {
         <div className="space-y-4">
           <div className="h-[360px] rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl relative">
             <AvatarCanvas
+              gender={interview?.gender || "female"}
               state={isPlaying ? "LISTENING" : "INTRODUCING"}
               emotion="attentive"
               gaze="CANDIDATE"
               gesture="small_nod"
-              interviewerName="Sarah Vance (Replay Track)"
-              interviewerTitle="Principal Technical Interviewer"
+              interviewerName={interview?.interviewerName || (interview?.gender === "male" ? "Marcus Vance" : "Elena Rostova")}
+              interviewerTitle={interview?.interviewerTitle || (interview?.gender === "male" ? "Senior Engineering Director" : "Principal Technical Architect")}
             />
           </div>
 

@@ -90,7 +90,15 @@ export interface CandidateClaimData {
   claimText: string;
   domain: string;
   source: "RESUME" | "GITHUB" | "INTERVIEW_ANSWER";
-  status: "UNTESTED" | "VERIFIED" | "CHALLENGED" | "UNSUPPORTED";
+  status:
+    | "UNTESTED"
+    | "VERIFIED"
+    | "CHALLENGED"
+    | "UNSUPPORTED"
+    | "PROBED"
+    | "SUPPORTED_BY_ANSWER"
+    | "UNRESOLVED"
+    | "CONTRADICTORY";
   evidenceNotes?: string;
 }
 

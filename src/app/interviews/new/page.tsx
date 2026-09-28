@@ -627,9 +627,11 @@ export default function NewInterviewPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Female Persona: Elena Rostova */}
-            <div
+            <button
+              type="button"
+              data-testid="persona-elena"
               onClick={() => setInterviewerGender("female")}
-              className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center gap-4 ${
+              className={`p-4 rounded-2xl border cursor-pointer text-left transition-all flex items-center gap-4 ${
                 interviewerGender === "female"
                   ? "bg-indigo-950/60 border-indigo-500 ring-2 ring-indigo-500/50 shadow-xl"
                   : "bg-slate-950 border-slate-800 hover:border-slate-700"
@@ -650,12 +652,14 @@ export default function NewInterviewPage() {
                 <p className="text-[11px] text-slate-400">Principal Technical Architect</p>
                 <p className="text-[10px] text-slate-500 leading-snug">Rigorous, balanced, architecture & edge-case inquiry.</p>
               </div>
-            </div>
+            </button>
 
             {/* Male Persona: Marcus Vance */}
-            <div
+            <button
+              type="button"
+              data-testid="persona-marcus"
               onClick={() => setInterviewerGender("male")}
-              className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center gap-4 ${
+              className={`p-4 rounded-2xl border cursor-pointer text-left transition-all flex items-center gap-4 ${
                 interviewerGender === "male"
                   ? "bg-indigo-950/60 border-indigo-500 ring-2 ring-indigo-500/50 shadow-xl"
                   : "bg-slate-950 border-slate-800 hover:border-slate-700"
@@ -676,7 +680,7 @@ export default function NewInterviewPage() {
                 <p className="text-[11px] text-slate-400">Senior Engineering Director</p>
                 <p className="text-[10px] text-slate-500 leading-snug">Direct, metric-driven, system resilience & delivery depth.</p>
               </div>
-            </div>
+            </button>
           </div>
         </div>
 
