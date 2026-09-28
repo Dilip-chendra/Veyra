@@ -29,12 +29,14 @@ async function runElenaBrowserVerification() {
     const testEmail = `dilip_elena_${Date.now()}@veyra.test`;
     console.log(`1. Signing up candidate: ${testEmail}...`);
     await page.goto(`${APP_URL}/signup`, { waitUntil: 'networkidle2' });
+    await page.waitForSelector('form input[type="text"]');
+    await new Promise((r) => setTimeout(r, 1000));
     await page.type('input[type="text"]', 'Elena Candidate');
     await page.type('input[type="email"]', testEmail);
     await page.type('input[type="password"]', 'Password123!');
     await page.click('button[type="submit"]');
 
-    await page.waitForNavigation({ waitUntil: 'networkidle2' });
+    await page.waitForFunction(() => !window.location.pathname.includes('/signup'), { timeout: 15000 });
     console.log('2. Landed on:', page.url());
 
     // -------------------------------------------------------------
@@ -77,7 +79,7 @@ async function runElenaBrowserVerification() {
     assert.ok(clickedStart, 'Should click Enter Interview Room button');
 
     console.log('5. Waiting for live room to load...');
-    await page.waitForNavigation({ waitUntil: 'networkidle2' });
+    await page.waitForFunction(() => window.location.pathname.includes('/live'), { timeout: 30000 });
     console.log('Live Room URL:', page.url());
     assert.ok(page.url().includes('/live'), 'Must navigate to /live');
 

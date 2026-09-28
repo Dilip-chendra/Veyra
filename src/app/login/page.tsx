@@ -56,7 +56,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} action="javascript:void(0);" className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-300">Email Address</label>
             <div className="relative">

@@ -178,7 +178,13 @@ export const LiveRoom: React.FC<LiveRoomProps> = ({
   };
 
   // 4. Process Candidate Answer & Invoke Turn API
-  const handleCandidateAnswer = async (answerText: string) => {
+  const handleCandidateAnswer = async (
+    answerText: string,
+    extraContext?: {
+      codeState?: { code?: string; testResults?: string; language?: string; hasErrors?: boolean };
+      whiteboardState?: { nodes?: any[]; edges?: any[] };
+    }
+  ) => {
     const trimmed = answerText.trim();
     if (!trimmed || isProcessingTurn) return;
 
@@ -208,6 +214,8 @@ export const LiveRoom: React.FC<LiveRoomProps> = ({
         body: JSON.stringify({
           candidateAnswer: trimmed,
           elapsedSeconds: realElapsedSeconds,
+          codeState: extraContext?.codeState,
+          whiteboardState: extraContext?.whiteboardState,
         }),
       });
 
@@ -467,7 +475,14 @@ export const LiveRoom: React.FC<LiveRoomProps> = ({
               <div className="lg:col-span-8 h-full rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 shadow-2xl">
                 <CodeEditorPane
                   onCodeExecuted={(_code: string, _lang: string, res: CodeRunResult) => {
-                    handleCandidateAnswer(`I executed my code. Output: ${res.stdout || res.stderr}`);
+                    handleCandidateAnswer(`I executed my code. Output: ${res.stdout || res.stderr}`, {
+                      codeState: {
+                        code: _code,
+                        language: _lang,
+                        testResults: res.stdout || res.stderr,
+                        hasErrors: res.exitCode !== 0,
+                      },
+                    });
                   }}
                 />
               </div>
@@ -500,7 +515,9 @@ export const LiveRoom: React.FC<LiveRoomProps> = ({
               <div className="lg:col-span-8 h-full rounded-2xl overflow-hidden border border-slate-800 bg-slate-900 shadow-2xl">
                 <SystemDesignCanvas
                   onArchitectureSubmitted={(_graph: WhiteboardGraph) => {
-                    handleCandidateAnswer("I have updated and submitted my system architecture diagram.");
+                    handleCandidateAnswer("I have updated and submitted my system architecture diagram.", {
+                      whiteboardState: _graph,
+                    });
                   }}
                 />
               </div>

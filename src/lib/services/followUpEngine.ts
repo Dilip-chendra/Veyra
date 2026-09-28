@@ -1,5 +1,27 @@
 import type { TurnEvaluation, InterviewDifficulty, InterviewerStyle } from "../../types/index.ts";
 
+export type FollowUpCategory =
+  | "CLARIFICATION"
+  | "DEPTH"
+  | "WHY"
+  | "TRADE_OFF"
+  | "EVIDENCE"
+  | "FAILURE"
+  | "SCALE"
+  | "OWNERSHIP"
+  | "ALTERNATIVE"
+  | "DEBUGGING";
+
+export interface GeneratedFollowUp {
+  followUpQuestion: string;
+  objective: string;
+  category: FollowUpCategory;
+  difficulty: "EASY" | "MEDIUM" | "HARD";
+  followUpReason: string;
+  expectedEvidence: string[];
+  isChallenging: boolean;
+}
+
 export class FollowUpEngine {
   public static evaluateAnswer(
     question: string,
@@ -11,11 +33,13 @@ export class FollowUpEngine {
     const lower = trimmed.toLowerCase();
 
     // Detect candidate asking for clarification
-    const clarificationDetected = /^(before I answer|could you clarify|are we assuming|what is the (scale|throughput|latency)|is this (read|write) heavy|do we need to support)/i.test(trimmed) ||
-      trimmed.includes("?") && wordCount < 30;
+    const clarificationDetected =
+      /^(before I answer|could you clarify|are we assuming|what is the (scale|throughput|latency)|is this (read|write) heavy|do we need to support)/i.test(trimmed) ||
+      (trimmed.includes("?") && wordCount < 30);
 
     // Detect candidate proposing an alternative design
-    const alternativeDesignArgued = /instead of|i would (actually )?(choose|recommend|opt for|prefer)|trade-off|alternative|i disagree with/i.test(trimmed);
+    const alternativeDesignArgued =
+      /instead of|i would (actually )?(choose|recommend|opt for|prefer)|trade-off|alternative|i disagree with/i.test(trimmed);
 
     // Claims detected
     const claimsDetected: string[] = [];
@@ -28,7 +52,10 @@ export class FollowUpEngine {
     let depth: TurnEvaluation["depth"] = "adequate";
     if (wordCount < 18 && !clarificationDetected) {
       depth = "shallow";
-    } else if (wordCount > 100 && (lower.includes("because") || lower.includes("trade-off") || lower.includes("specifically"))) {
+    } else if (
+      (wordCount > 60 || (wordCount > 20 && lower.includes("because") && (lower.includes("guarantee") || lower.includes("minimize") || lower.includes("trade-off") || lower.includes("partition")))) &&
+      (lower.includes("because") || lower.includes("trade-off") || lower.includes("specifically"))
+    ) {
       depth = "deep";
     } else if (wordCount > 180 && lower.includes("for example") && lower.includes("limitation")) {
       depth = "exceptional";
@@ -79,6 +106,9 @@ export class FollowUpEngine {
     };
   }
 
+  /**
+   * Generates a context-aware follow-up question selecting from the 10 specialized categories.
+   */
   public static generateFollowUp(
     question: string,
     answer: string,
@@ -86,22 +116,17 @@ export class FollowUpEngine {
     difficulty: InterviewDifficulty = "ADAPTIVE",
     style: InterviewerStyle = "PROFESSIONAL",
     priorClaims: string[] = []
-  ): {
-    followUpQuestion: string;
-    objective: string;
-    difficulty: "EASY" | "MEDIUM" | "HARD";
-    followUpReason: string;
-    expectedEvidence: string[];
-    isChallenging: boolean;
-  } {
+  ): GeneratedFollowUp {
     const trimmed = answer.trim();
     const lower = trimmed.toLowerCase();
 
     // 1. Candidate asked a legitimate clarification
     if (evaluation.clarificationDetected) {
       return {
-        followUpQuestion: "Good question to clarify. Assume a write-heavy workload with approximately 50,000 requests per second at peak, with p99 latency target under 50 milliseconds. With those constraints, how does that shape your architectural choice?",
+        followUpQuestion:
+          "Good question to clarify. Assume a write-heavy workload with approximately 50,000 requests per second at peak, with p99 latency target under 50 milliseconds. With those constraints, how does that shape your architectural choice?",
         objective: "clarification_response_and_constraint_handling",
+        category: "CLARIFICATION",
         difficulty: "MEDIUM",
         followUpReason: "Candidate correctly asked for architectural constraints before answering",
         expectedEvidence: ["Constraint acknowledgment", "Targeted architecture", "Throughput estimation"],
@@ -112,8 +137,10 @@ export class FollowUpEngine {
     // 2. Candidate proposed an alternative design or challenged interviewer assumption
     if (evaluation.alternativeDesignArgued) {
       return {
-        followUpQuestion: "Fair point — challenging standard assumptions is sound engineering. Walk me through the specific trade-offs: what makes your proposed approach preferable here, and under what conditions does it break down?",
+        followUpQuestion:
+          "Fair point — challenging standard assumptions is sound engineering. Walk me through the specific trade-offs: what makes your proposed approach preferable here, and under what conditions does it break down?",
         objective: "evaluate_tradeoff_defense",
+        category: "TRADE_OFF",
         difficulty: "HARD",
         followUpReason: "Candidate argued an alternative design; testing technical depth and boundary conditions",
         expectedEvidence: ["Trade-off analysis", "Failure threshold", "Cost vs complexity"],
@@ -121,24 +148,13 @@ export class FollowUpEngine {
       };
     }
 
-    // 3. Candidate gave a shallow or high-level answer
-    if (evaluation.depth === "shallow") {
-      const detail = extractSpecificDetail(trimmed) || extractCoreTopic(trimmed);
+    // 3. Category: EVIDENCE / WHY — Candidate mentioned RAG, Embeddings, or Vector Retrieval
+    if (lower.includes("rag") || lower.includes("retrieval") || lower.includes("embedding")) {
       return {
-        followUpQuestion: `You touched on ${detail}, but let's go a layer deeper. Walk me through the exact implementation mechanics: what happens under the hood when that executes?`,
-        objective: "probe_implementation_depth",
-        difficulty: "MEDIUM",
-        followUpReason: "Candidate provided high-level overview without concrete implementation mechanics",
-        expectedEvidence: ["Low-level mechanics", "Data flow", "Error handling"],
-        isChallenging: true,
-      };
-    }
-
-    // 4. Probe prior claims if mentioned (e.g. latency, scale, RAG, caching)
-    if (lower.includes("rag") || lower.includes("retrieval")) {
-      return {
-        followUpQuestion: "In your retrieval pipeline, how do you measure retrieval quality? What embedding model did you evaluate, and how do you prevent hallucinations or stale chunk contamination?",
+        followUpQuestion:
+          "In your retrieval pipeline, how do you measure retrieval quality? What embedding model did you evaluate, and how do you prevent hallucinations or stale chunk contamination?",
         objective: "test_rag_evaluation_and_chunking",
+        category: "EVIDENCE",
         difficulty: "HARD",
         followUpReason: "Candidate discussed RAG retrieval; probing evaluation and failure prevention",
         expectedEvidence: ["Hit rate / MRR metrics", "Chunking strategy", "Reranking"],
@@ -146,10 +162,13 @@ export class FollowUpEngine {
       };
     }
 
+    // 4. Category: TRADE_OFF / FAILURE — Candidate introduced Redis or Caching
     if (lower.includes("redis") || lower.includes("cache")) {
       return {
-        followUpQuestion: "When relying on Redis as a cache, how do you mitigate cache stampede (thundering herd) and ensure data consistency during database updates?",
+        followUpQuestion:
+          "When relying on Redis as a cache, how do you mitigate cache stampede (thundering herd) and ensure data consistency during database updates?",
         objective: "test_caching_concurrency_and_invalidation",
+        category: "TRADE_OFF",
         difficulty: "HARD",
         followUpReason: "Candidate introduced caching layer; testing concurrency and invalidation",
         expectedEvidence: ["Mutual exclusion locks / probabilistic early expiration", "Write-through vs Cache-aside consistency"],
@@ -157,10 +176,13 @@ export class FollowUpEngine {
       };
     }
 
+    // 5. Category: FAILURE / DEBUGGING — Candidate utilized Event Queue / Kafka
     if (lower.includes("kafka") || lower.includes("queue") || lower.includes("event")) {
       return {
-        followUpQuestion: "With an asynchronous event queue, how do you guarantee idempotent processing and handle poison pill messages that repeatedly fail consumer processing?",
+        followUpQuestion:
+          "With an asynchronous event queue, how do you guarantee idempotent processing and handle poison pill messages that repeatedly fail consumer processing?",
         objective: "test_event_driven_resilience",
+        category: "FAILURE",
         difficulty: "HARD",
         followUpReason: "Candidate utilized event queue; probing idempotency and dead-letter queue mechanics",
         expectedEvidence: ["Idempotency keys", "Dead letter queue (DLQ)", "At-least-once delivery handling"],
@@ -168,12 +190,27 @@ export class FollowUpEngine {
       };
     }
 
-    // 5. If strong and deep, increase complexity with extreme scaling constraint
+    // 6. Category: DEPTH — Candidate gave a shallow or high-level answer
+    if (evaluation.depth === "shallow") {
+      const detail = extractSpecificDetail(trimmed) || extractCoreTopic(trimmed);
+      return {
+        followUpQuestion: `You touched on ${detail}, but let's go a layer deeper. Walk me through the exact implementation mechanics: what happens under the hood when that executes?`,
+        objective: "probe_implementation_depth",
+        category: "DEPTH",
+        difficulty: "MEDIUM",
+        followUpReason: "Candidate provided high-level overview without concrete implementation mechanics",
+        expectedEvidence: ["Low-level mechanics", "Data flow", "Error handling"],
+        isChallenging: true,
+      };
+    }
+
+    // 7. Category: SCALE — Deep / Exceptional performance requires stress-testing
     if (evaluation.depth === "deep" || evaluation.depth === "exceptional") {
       const topic = extractCoreTopic(trimmed);
       return {
         followUpQuestion: `Strong explanation. Now let's stress-test that: suppose your ${topic} scales by 10x overnight and your primary database region suffers a complete network partition. How does your system respond, and what specific degradation or fallback behavior does the user see?`,
         objective: "stress_test_extreme_scale_and_partition",
+        category: "SCALE",
         difficulty: "HARD",
         followUpReason: "Candidate demonstrated solid baseline competency; introducing advanced distributed failure scenario",
         expectedEvidence: ["CAP theorem trade-offs", "Failover automation", "Graceful degradation"],
@@ -181,7 +218,7 @@ export class FollowUpEngine {
       };
     }
 
-    // Default adaptive follow-up — extract meaningful topic from answer
+    // 8. Category: DEBUGGING / FAILURE — Default adaptive inquiry
     const topic = extractCoreTopic(trimmed);
     const specificDetail = extractSpecificDetail(trimmed);
 
@@ -190,6 +227,7 @@ export class FollowUpEngine {
         ? `You mentioned ${specificDetail} — what failure modes have you encountered with that in production, and how did your monitoring detect them before users were impacted?`
         : `What were the most significant production failure modes you observed with ${topic}, and how did your alerting or tracing identify them before they escalated?`,
       objective: "probe_production_resilience",
+      category: "DEBUGGING",
       difficulty: "MEDIUM",
       followUpReason: "Testing production operational readiness and observability based on candidate's specific answer",
       expectedEvidence: ["Monitoring metrics", "Alert thresholds", "Post-mortem insight"],
@@ -232,7 +270,7 @@ function extractCoreTopic(answer: string): string {
  */
 function extractSpecificDetail(answer: string): string | null {
   // Extract technology names, metrics, or specific methods mentioned
-  const techMatch = answer.match(/\b(Redis|Kafka|Postgres|MySQL|MongoDB|DynamoDB|Cassandra|Elasticsearch|Nginx|HAProxy|gRPC|GraphQL|Terraform|Pulumi|Prometheus|Grafana|Datadog|PagerDuty|Sentry|OpenTelemetry|RabbitMQ|Celery|Airflow|dbt|Spark|Flink|Hadoop)\b/);
+  const techMatch = answer.match(/\b(Redis|Kafka|Postgres|MySQL|MongoDB|DynamoDB|Cassandra|Elasticsearch|Nginx|HAProxy|gRPC|GraphQL|Terraform|Pulumi|Prometheus|Grafana|Datadog|PagerDuty|Sentry|OpenTelemetry|RabbitMQ|Celery|Airflow|dbt|Spark|Flink|Hadoop)\b/i);
   if (techMatch) return techMatch[1];
 
   // Extract metric patterns like "99th percentile", "50ms latency", "10k RPS"

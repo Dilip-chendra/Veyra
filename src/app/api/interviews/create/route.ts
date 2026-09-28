@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSessionFromRequest } from "@/lib/auth";
 import { JobDescriptionService } from "@/lib/services/jobDescriptionService";
+import { ResumeService } from "@/lib/services/resumeService";
 
 export async function POST(req: NextRequest) {
   const session = await getSessionFromRequest(req);
@@ -26,15 +27,25 @@ export async function POST(req: NextRequest) {
 
     const resolvedGender = gender === "male" ? "male" : "female";
     const resolvedName = interviewerName || (resolvedGender === "male" ? "Marcus Vance" : "Elena Rostova");
-    const resolvedTitle = interviewerTitle || (resolvedGender === "male" ? "Senior Engineering Director" : "VP of Engineering & Principal Technical Architect");
+    const resolvedTitle =
+      interviewerTitle ||
+      (resolvedGender === "male"
+        ? "Senior Engineering Director"
+        : "VP of Engineering & Principal Technical Architect");
 
-    // Generate dynamic blueprint
-    const syntheticJD = JobDescriptionService.parseJobDescription(
-      `Role: ${role}\nTarget seniority: Senior\nFocus: Architecture, System Design, Scalability, and Code Execution`,
-      role
-    );
+    // 1. Fetch real Job Description if provided
+    let jdText = `Role: ${role}\nTarget seniority: Senior\nFocus: Architecture, System Design, Scalability, and Code Execution`;
+    if (jobDescriptionId) {
+      const realJd = await db.jobDescription.findUnique({ where: { id: jobDescriptionId } });
+      if (realJd?.rawText) {
+        jdText = realJd.rawText;
+      }
+    }
+
+    // 2. Generate dynamic blueprint
+    const parsedJD = JobDescriptionService.parseJobDescription(jdText, role);
     const blueprint = JobDescriptionService.generateBlueprint(
-      syntheticJD,
+      parsedJD,
       durationMinutes,
       interviewerStyle,
       difficulty
@@ -44,6 +55,7 @@ export async function POST(req: NextRequest) {
     (blueprint as any).interviewerName = resolvedName;
     (blueprint as any).interviewerTitle = resolvedTitle;
 
+    // 3. Create Interview record
     const interview = await db.interview.create({
       data: {
         userId: session.userId,
@@ -62,10 +74,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Create Interview Stages
+    // 4. Create Interview Stages
+    let firstStageId: string | null = null;
     for (let i = 0; i < blueprint.stages.length; i++) {
       const stage = blueprint.stages[i];
-      await db.interviewStage.create({
+      const createdStage = await db.interviewStage.create({
         data: {
           interviewId: interview.id,
           name: stage.name,
@@ -74,14 +87,61 @@ export async function POST(req: NextRequest) {
           status: i === 0 ? "ACTIVE" : "PENDING",
         },
       });
+      if (i === 0) firstStageId = createdStage.id;
     }
 
-    // Log interview started event
+    // 5. Seed initial question in database
+    await db.interviewQuestion.create({
+      data: {
+        interviewId: interview.id,
+        stageId: firstStageId,
+        objective: "initial_introduction_and_background",
+        questionText: blueprint.initialQuestion,
+        difficulty: "EASY",
+        followUpReason: "Standard initial question to open dialogue and welcome candidate",
+        expectedEvidence: JSON.stringify(["Technical introduction", "Background overview"]),
+        order: 1,
+      },
+    });
+
+    // 6. Ingest resume claims into CandidateClaim table if resumeId attached
+    if (resumeId) {
+      const resume = await db.resume.findUnique({ where: { id: resumeId } });
+      if (resume) {
+        let parsedResumeData: any = {};
+        try {
+          parsedResumeData = JSON.parse(resume.parsedData || "{}");
+        } catch {}
+
+        const claimsToSeed = parsedResumeData.claims || [];
+        for (const claimText of claimsToSeed.slice(0, 10)) {
+          await db.candidateClaim.create({
+            data: {
+              userId: session.userId,
+              interviewId: interview.id,
+              claimText,
+              domain: "RESUME_ACHIEVEMENT",
+              source: "RESUME",
+              status: "UNTESTED",
+              evidenceNotes: "Extracted from candidate resume",
+            },
+          });
+        }
+      }
+    }
+
+    // 7. Log interview scheduled event
     await db.interviewEvent.create({
       data: {
         interviewId: interview.id,
         eventType: "INTERVIEW_SCHEDULED",
-        payload: JSON.stringify({ role, durationMinutes, stagesCount: blueprint.stages.length }),
+        payload: JSON.stringify({
+          role,
+          interviewerName: resolvedName,
+          gender: resolvedGender,
+          durationMinutes,
+          stagesCount: blueprint.stages.length,
+        }),
       },
     });
 

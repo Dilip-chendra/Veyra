@@ -50,12 +50,14 @@ async function runBrowserVerification() {
 
     const testEmail = `dilip_candidate_${Date.now()}@veyra.test`;
     console.log('3. Filling Signup Form:', testEmail);
+    await page.waitForSelector('form input[type="text"]');
+    await new Promise((r) => setTimeout(r, 1000));
     await page.type('input[type="text"]', 'Dilip Chendra');
     await page.type('input[type="email"]', testEmail);
     await page.type('input[type="password"]', 'Password123!');
     await page.click('button[type="submit"]');
 
-    await page.waitForNavigation({ waitUntil: 'networkidle2' });
+    await page.waitForFunction(() => !window.location.pathname.includes('/signup'), { timeout: 15000 });
     console.log('4. Landed on:', page.url());
     assert.ok(page.url().includes('/dashboard') || page.url().includes('/onboarding'), 'Should land on dashboard or onboarding');
 
@@ -106,7 +108,7 @@ async function runBrowserVerification() {
     assert.ok(clickedStart, 'Should click Enter Interview Room button');
 
     console.log('7. Waiting for live room to load...');
-    await page.waitForNavigation({ waitUntil: 'networkidle2' });
+    await page.waitForFunction(() => window.location.pathname.includes('/live'), { timeout: 30000 });
     console.log('Live Room URL:', page.url());
     assert.ok(page.url().includes('/live'), 'Must navigate to /live');
 
