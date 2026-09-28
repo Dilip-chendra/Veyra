@@ -32,6 +32,11 @@ export async function POST(
       return NextResponse.json({ error: "Interview not found" }, { status: 404 });
     }
 
+    // Tenant / User Isolation: Ensure user owns this interview or is authorized admin/employer
+    if (interview.userId !== session.userId && session.role !== "ADMIN" && session.role !== "EMPLOYER") {
+      return NextResponse.json({ error: "Forbidden: You cannot modify another candidate's interview session" }, { status: 403 });
+    }
+
     // Build conversation history
     const history: {
       role: "interviewer" | "candidate";

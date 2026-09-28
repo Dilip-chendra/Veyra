@@ -167,11 +167,6 @@ export const LiveRoom: React.FC<LiveRoomProps> = ({
   const handleStartSession = () => {
     // Unfreeze audio engine and play chime
     playWebAudioChime();
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      try {
-        window.speechSynthesis.resume();
-      } catch {}
-    }
 
     setHasStartedSession(true);
     sessionStartTimeRef.current = Date.now();

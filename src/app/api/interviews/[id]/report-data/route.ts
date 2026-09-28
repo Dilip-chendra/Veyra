@@ -26,6 +26,11 @@ export async function GET(
       return NextResponse.json({ error: "Interview not found" }, { status: 404 });
     }
 
+    // Tenant / User Isolation: Ensure user owns this interview or is authorized admin/employer
+    if (interview.userId !== session.userId && session.role !== "ADMIN" && session.role !== "EMPLOYER") {
+      return NextResponse.json({ error: "Forbidden: You cannot access another candidate's report" }, { status: 403 });
+    }
+
     return NextResponse.json({
       interview,
       report: interview.report,
