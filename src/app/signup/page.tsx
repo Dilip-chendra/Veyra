@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles, ArrowRight, Lock, Mail, User, Building2, AlertCircle } from "lucide-react";
+import { ArrowRight, Lock, Mail, User, Building2, AlertCircle } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -44,8 +45,8 @@ export default function SignupPage() {
     <div className="flex-1 flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex p-3 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 mb-2">
-            <Sparkles className="w-6 h-6" />
+          <div className="inline-flex p-3 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 mb-2">
+            <BrandLogo size={36} showWordmark={false} />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">Create Your Veyra Account</h1>
           <p className="text-xs text-slate-400">Step across from an autonomous human interviewer</p>

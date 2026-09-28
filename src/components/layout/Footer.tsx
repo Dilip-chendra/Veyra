@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Shield, Cpu } from "lucide-react";
+import { Shield, Cpu } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export const Footer: React.FC = () => {
   return (
@@ -9,14 +10,7 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           {/* Brand Col */}
           <div className="col-span-2 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center">
-                <Sparkles className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="text-base font-bold text-white font-mono tracking-tight">
-                VEYRA<span className="text-indigo-400">.</span>
-              </span>
-            </div>
+            <BrandLogo size={26} />
             <p className="text-slate-400 max-w-sm leading-relaxed text-xs">
               The real-time, photorealistic human-like AI interviewer. Conducting natural voice interviews with eye contact, dynamic follow-ups, memory, live coding, and evidence-backed evaluation.
             </p>

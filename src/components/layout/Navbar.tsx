@@ -20,6 +20,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { UserSession } from "@/types";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -60,13 +61,8 @@ export const Navbar: React.FC = () => {
     <nav className="sticky top-0 z-40 w-full bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-lg font-bold tracking-tight text-white font-mono">
-            VEYRA<span className="text-indigo-400">.</span>
-          </span>
+        <Link href="/" className="flex items-center group">
+          <BrandLogo size={32} />
         </Link>
 
         {/* Desktop Nav Links */}
