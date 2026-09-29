@@ -246,7 +246,7 @@ function MarqueeSection() {
 function ProblemSection() {
   const { ref, style } = useSectionReveal();
   return (
-    <section ref={ref} style={style} className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+    <section id="how-it-works" ref={ref} style={style} className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto">
       <div className="text-center mb-16 space-y-4">
         <SectionLabel>The problem</SectionLabel>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-2xl mx-auto">
@@ -472,6 +472,7 @@ function VoiceSection({ persona, onPersonaChange }: { persona: "marcus" | "elena
 
   return (
     <section
+      id="features"
       ref={ref}
       style={{ ...style, background: "rgba(10,11,18,0.6)", borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
       className="py-28 px-5 sm:px-8 lg:px-12"
@@ -827,7 +828,7 @@ const INTERVIEW_TYPES = [
 function BentoSection() {
   const { ref, style } = useSectionReveal();
   return (
-    <section ref={ref} style={style} className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+    <section id="interview-types" ref={ref} style={style} className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto">
       <div className="text-center mb-14 space-y-4">
         <SectionLabel>Interview types</SectionLabel>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
@@ -1136,74 +1137,6 @@ function FinalCTA({ persona }: { persona: "marcus" | "elena" }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FOOTER
-// ─────────────────────────────────────────────────────────────────────────────
-
-function LandingFooter() {
-  return (
-    <footer className="py-14 px-5 sm:px-8 lg:px-12" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-12">
-          <div className="col-span-2 sm:col-span-1 space-y-4">
-            <BrandLogo size={28} />
-            <p className="text-[12px] text-slate-500 leading-relaxed max-w-xs">
-              AI-powered real-time voice interviews for serious technical preparation.
-            </p>
-          </div>
-          {[
-            {
-              heading: "Product",
-              links: [
-                { label: "Start Interview", href: "/interviews/new" },
-                { label: "Coding", href: "/coding" },
-                { label: "System Design", href: "/system-design" },
-                { label: "Progress", href: "/progress" },
-              ],
-            },
-            {
-              heading: "Account",
-              links: [
-                { label: "Sign Up", href: "/signup" },
-                { label: "Sign In", href: "/login" },
-                { label: "Dashboard", href: "/dashboard" },
-                { label: "Settings", href: "/settings" },
-              ],
-            },
-            {
-              heading: "Legal",
-              links: [
-                { label: "Privacy", href: "/privacy" },
-                { label: "Terms", href: "/terms" },
-              ],
-            },
-          ].map(({ heading, links }) => (
-            <div key={heading} className="space-y-3">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{heading}</p>
-              <ul className="space-y-2">
-                {links.map(({ label, href }) => (
-                  <li key={href}>
-                    <Link href={href} className="text-[13px] text-slate-400 hover:text-white transition-colors">
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <p className="text-[11px] text-slate-600">
-            &copy; {new Date().getFullYear()} Veyra. All rights reserved.
-          </p>
-          <p className="text-[11px] text-slate-600">
-            Powered by <span className="text-slate-500">Cartesia Sonic-3.6</span> &amp; <span className="text-slate-500">Ink-2</span>
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HERO SECTION
@@ -1223,7 +1156,7 @@ function HeroSection({
   onVoiceClick: () => void;
 }) {
   return (
-    <section className="relative min-h-[100svh] flex items-center px-5 sm:px-8 lg:px-16 pt-20 pb-16 overflow-hidden">
+    <section id="product" className="relative min-h-[100svh] flex items-center px-5 sm:px-8 lg:px-16 pt-20 pb-16 overflow-hidden">
       {/* Atmospheric glows */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div style={{ position: "absolute", top: "15%", left: "-5%", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.09) 0%, transparent 65%)", filter: "blur(60px)" }} />
@@ -1461,7 +1394,6 @@ export default function LandingPage() {
       <ReportSection />
       <HumanPresenceSection persona={persona} />
       <FinalCTA persona={persona} />
-      <LandingFooter />
     </div>
   );
 }

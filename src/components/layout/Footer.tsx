@@ -1,34 +1,33 @@
 import React from "react";
 import Link from "next/link";
-import { Shield, Cpu } from "lucide-react";
 import { BrandLogo } from "@/components/ui/BrandLogo";
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="border-t border-slate-800/80 bg-slate-950 py-12 text-xs text-slate-400">
+    <footer className="border-t border-white/5 py-14 text-xs text-slate-400" style={{ background: "#06070d" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           {/* Brand Col */}
-          <div className="col-span-2 space-y-3">
-            <BrandLogo size={26} />
+          <div className="col-span-2 space-y-3.5">
+            <BrandLogo size={28} />
             <p className="text-slate-400 max-w-sm leading-relaxed text-xs">
-              The real-time, photorealistic human-like AI interviewer. Conducting natural voice interviews with eye contact, dynamic follow-ups, memory, live coding, and evidence-backed evaluation.
+              The AI Human Interviewer. Conducting natural voice interviews with adaptive questioning, multi-turn memory, real-time code verification, and evidence-backed evaluation.
             </p>
-            <div className="flex items-center gap-3 pt-2 text-slate-500">
-              <span className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
-                <Shield className="w-3.5 h-3.5 text-emerald-400" /> Multi-tenant Tenant Isolation
+            <div className="flex items-center gap-3 pt-1 text-[11px] text-slate-500">
+              <span className="flex items-center gap-1.5 text-slate-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Multi-tenant Isolation
               </span>
               <span>•</span>
-              <span className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
-                <Cpu className="w-3.5 h-3.5 text-indigo-400" /> WebGL 3D Facial Rig
+              <span className="flex items-center gap-1.5 text-slate-400 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" /> Cartesia Sonic-3.6 &amp; Ink-2
               </span>
             </div>
           </div>
 
           {/* Product */}
-          <div className="space-y-2.5">
-            <div className="font-semibold text-slate-200">Platform</div>
-            <ul className="space-y-1.5">
+          <div className="space-y-3">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Platform</div>
+            <ul className="space-y-2">
               <li><Link href="/interviews/new" className="hover:text-white transition-colors">Start Interview</Link></li>
               <li><Link href="/coding" className="hover:text-white transition-colors">Live Coding Sandbox</Link></li>
               <li><Link href="/system-design" className="hover:text-white transition-colors">System Design Canvas</Link></li>
@@ -38,21 +37,21 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Enterprise */}
-          <div className="space-y-2.5">
-            <div className="font-semibold text-slate-200">For Teams</div>
-            <ul className="space-y-1.5">
+          <div className="space-y-3">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">For Teams</div>
+            <ul className="space-y-2">
               <li><Link href="/company" className="hover:text-white transition-colors">Employer Portal</Link></li>
               <li><Link href="/company/roles" className="hover:text-white transition-colors">Competency Rubrics</Link></li>
               <li><Link href="/company/candidates" className="hover:text-white transition-colors">Candidate Evidence</Link></li>
               <li><Link href="/pricing" className="hover:text-white transition-colors">Enterprise Pricing</Link></li>
-              <li><Link href="/admin" className="hover:text-white transition-colors">Observability & Health</Link></li>
+              <li><Link href="/admin" className="hover:text-white transition-colors">Observability &amp; Health</Link></li>
             </ul>
           </div>
 
           {/* Legal & Trust */}
-          <div className="space-y-2.5">
-            <div className="font-semibold text-slate-200">Trust & Privacy</div>
-            <ul className="space-y-1.5">
+          <div className="space-y-3">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Trust &amp; Privacy</div>
+            <ul className="space-y-2">
               <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
               <li><Link href="/about" className="hover:text-white transition-colors">About Veyra</Link></li>
@@ -61,7 +60,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+        <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
           <div>© {new Date().getFullYear()} Veyra Technologies Inc. All rights reserved. Zero fake data policy.</div>
           <div className="flex items-center gap-4">
             <span>Cartesia Sonic-3.6 Realtime Voice Core</span>

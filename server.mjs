@@ -15,8 +15,11 @@ import { parse } from "url";
 import next from "next";
 import { WebSocketServer, WebSocket as NodeWS } from "ws";
 
-const dev = process.env.NODE_ENV !== "production";
-const hostname = "localhost";
+import fs from "fs";
+
+const hasBuild = fs.existsSync(".next/BUILD_ID");
+const dev = process.env.NODE_ENV === "development" ? true : (process.env.NODE_ENV === "production" ? false : !hasBuild);
+const hostname = process.env.HOSTNAME || "0.0.0.0";
 const port = parseInt(process.env.PORT || "3000", 10);
 
 const CARTESIA_API_KEY = process.env.CARTESIA_API_KEY;
@@ -139,7 +142,7 @@ app.prepare().then(() => {
   }
 
   httpServer.listen(port, hostname, () => {
-    console.log(`[Veyra] Server ready at http://${hostname}:${port}`);
+    console.log(`[Veyra] Server ready at http://localhost:${port} (mode: ${dev ? "development" : "production"})`);
     console.log(`[Veyra] Cartesia TTS: ${CARTESIA_API_KEY ? "Configured (Sonic-3.6)" : "NOT CONFIGURED"}`);
     console.log(`[Veyra] Cartesia STT: ${CARTESIA_API_KEY ? "Configured (Ink-2, relay active)" : "NOT CONFIGURED"}`);
   });

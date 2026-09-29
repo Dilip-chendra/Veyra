@@ -80,24 +80,34 @@ export const Navbar: React.FC = () => {
 
         {/* Desktop Nav Links */}
         <div className="hidden md:flex items-center gap-1">
-          {session && navLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive = pathname.startsWith(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                  isActive
-                    ? "bg-slate-800 text-indigo-300 border border-slate-700/80"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{link.label}</span>
-              </Link>
-            );
-          })}
+          {session ? (
+            navLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                    isActive
+                      ? "bg-slate-800 text-indigo-300 border border-slate-700/80"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })
+          ) : (
+            <div className="flex items-center gap-6 text-[13px] font-medium text-slate-400">
+              <Link href="/#product" className="hover:text-white transition-colors">Product</Link>
+              <Link href="/#how-it-works" className="hover:text-white transition-colors">How it Works</Link>
+              <Link href="/#features" className="hover:text-white transition-colors">Features</Link>
+              <Link href="/#interview-types" className="hover:text-white transition-colors">Interview Types</Link>
+              <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
+            </div>
+          )}
         </div>
 
         {/* Auth / Action Area */}
@@ -198,20 +208,27 @@ export const Navbar: React.FC = () => {
             </>
           ) : (
             <div className="flex flex-col gap-2 pt-2">
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2 text-sm text-slate-300 bg-slate-800 rounded-lg"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2 text-sm text-white bg-indigo-600 rounded-lg font-semibold"
-              >
-                Get Started
-              </Link>
+              <Link href="/#product" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-lg">Product</Link>
+              <Link href="/#how-it-works" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-lg">How it Works</Link>
+              <Link href="/#features" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-lg">Features</Link>
+              <Link href="/#interview-types" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-lg">Interview Types</Link>
+              <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 rounded-lg">Pricing</Link>
+              <div className="pt-2 border-t border-slate-800 flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2 text-sm text-slate-300 bg-slate-800 rounded-lg"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-center py-2 text-sm text-white bg-indigo-600 rounded-lg font-semibold"
+                >
+                  Get Started
+                </Link>
+              </div>
             </div>
           )}
         </div>
