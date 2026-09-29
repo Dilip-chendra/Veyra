@@ -5,120 +5,184 @@ export interface CompanyLogoProps {
   size?: number;
 }
 
-export const GoogleLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+// 1. Google (Official Multi-Color 'G' + 'Google' Wordmark)
+export const GoogleLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 100 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 4)">
+      <path d="M12 23.5c6.35 0 11.68-4.22 11.68-11.75 0-.82-.07-1.61-.2-2.38H12v4.51h6.64c-.29 1.5-1.15 2.77-2.45 3.62v2.98h3.94C22.44 18.35 23.68 15.2 23.68 11.75 23.68 11.05 23.62 10.38 23.48 9.75H12V5.24h11.48C23.48 5.24 23.68 11.75 23.68 11.75z" fill="none"/>
+      <path d="M23.48 9.75H12v4.51h6.64c-.29 1.5-1.15 2.77-2.45 3.62l3.94 3.05c2.31-2.13 3.65-5.27 3.65-9.18 0-.69-.06-1.36-.19-2z" fill="#4285F4"/>
+      <path d="M12 23.5c3.24 0 5.96-1.07 7.95-2.91l-3.94-3.05c-1.08.72-2.46 1.15-4.01 1.15-3.09 0-5.71-2.09-6.65-4.9H1.27v3.15C3.31 20.9 7.37 23.5 12 23.5z" fill="#34A853"/>
+      <path d="M5.35 13.79c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.06H1.27C.46 7.67 0 9.48 0 11.5s.46 3.83 1.27 5.44l4.08-3.15z" fill="#FBBC05"/>
+      <path d="M12 4.19c1.76 0 3.34.61 4.59 1.8l3.44-3.44C17.95.84 15.23 0 12 0 7.37 0 3.31 2.6 1.27 6.06l4.08 3.15c.94-2.81 3.56-4.9 6.65-4.9z" fill="#EA4335"/>
+    </g>
+    <text x="32" y="22" fill="#E2E8F0" fontSize="18" fontWeight="600" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.5px">Google</text>
   </svg>
 );
 
-export const MicrosoftLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <rect x="1" y="1" width="10.5" height="10.5" />
-    <rect x="12.5" y="1" width="10.5" height="10.5" />
-    <rect x="1" y="12.5" width="10.5" height="10.5" />
-    <rect x="12.5" y="12.5" width="10.5" height="10.5" />
+// 2. Microsoft (Official 4-Color Square + 'Microsoft')
+export const MicrosoftLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 120 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 6)">
+      <rect x="0" y="0" width="9.5" height="9.5" fill="#F25022" />
+      <rect x="11" y="0" width="9.5" height="9.5" fill="#7FBA00" />
+      <rect x="0" y="11" width="9.5" height="9.5" fill="#00A4EF" />
+      <rect x="11" y="11" width="9.5" height="9.5" fill="#FFB900" />
+    </g>
+    <text x="30" y="22" fill="#E2E8F0" fontSize="17" fontWeight="600" fontFamily="Segoe UI, system-ui, sans-serif" letterSpacing="-0.3px">Microsoft</text>
   </svg>
 );
 
-export const MetaLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M12 7.05c-2.48 0-4.66 1.48-5.78 3.73C4.98 8.44 2.89 7.05.5 7.05 0 7.05 0 7.42 0 7.8c0 3.98 3.23 7.2 7.2 7.2 2.5 0 4.71-1.37 5.86-3.52 1.15 2.15 3.36 3.52 5.86 3.52 3.98 0 7.2-3.23 7.2-7.2 0-.38 0-.75-.5-.75-2.39 0-4.48 1.39-5.72 3.73-1.12-2.25-3.3-3.73-5.9-3.73zm-4.8 6.13c-2.73 0-4.95-2.12-4.95-4.73 0-.17.02-.34.05-.5 1.18 1.95 3.33 3.27 5.79 3.27 1.09 0 2.11-.27 3.01-.76-.78 1.63-2.21 2.72-3.9 2.72zm9.6 0c-1.69 0-3.12-1.09-3.9-2.72.9.49 1.92.76 3.01.76 2.46 0 4.61-1.32 5.79-3.27.03.16.05.33.05.5 0 2.61-2.22 4.73-4.95 4.73z" />
+// 3. Amazon (Official Amazon Wordmark + Orange Smile Arrow)
+export const AmazonLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 110 34" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <text x="2" y="21" fill="#FFFFFF" fontSize="21" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.8px">amazon</text>
+    <path d="M10 27c22 8 54 8 74-4" stroke="#FF9900" strokeWidth="2.5" strokeLinecap="round" />
+    <path d="M80 20l5 3-4 4" fill="none" stroke="#FF9900" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-export const AppleLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.84c.67-.82 1.13-1.96.99-3.1-.99.04-2.18.66-2.88 1.48-.61.71-1.14 1.87-.99 2.98 1.1.09 2.22-.55 2.88-1.36z" />
+// 4. Meta (Official Blue Infinity Ribbon + 'Meta')
+export const MetaLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 95 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 6)">
+      <path d="M14.6 2.3c-2.3 0-4.3 1.4-5.4 3.4C8.1 3.7 6.1 2.3 3.8 2.3 1.7 2.3 0 4 0 6.1c0 3.3 2.7 6 6 6 2.3 0 4.3-1.4 5.4-3.4 1.1 2 3.1 3.4 5.4 3.4 3.3 0 6-2.7 6-6 0-2.1-1.7-3.8-3.8-3.8zm-10.8 7.6c-2.1 0-3.8-1.7-3.8-3.8s1.7-3.8 3.8-3.8c1.6 0 3 1 3.6 2.4-.6 1.4-1.8 2.4-3.6 2.4zm10.8 0c-1.8 0-3-1-3.6-2.4.6-1.4 2-2.4 3.6-2.4 2.1 0 3.8 1.7 3.8 3.8s-1.7 3.8-3.8 3.8z" fill="#0081FB" transform="scale(1.2)"/>
+    </g>
+    <text x="36" y="22" fill="#E2E8F0" fontSize="18" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.4px">Meta</text>
   </svg>
 );
 
-export const AmazonLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M14.28 13.91c-.42.34-.9.51-1.44.51-.76 0-1.28-.35-1.55-1.05-.28-.7-.41-1.63-.41-2.79 0-1.12.15-2.02.44-2.7.29-.68.83-1.02 1.62-1.02.49 0 .94.16 1.34.48v6.57zm4.35-7.72c-.89-.78-2.06-1.17-3.52-1.17-1.48 0-2.65.38-3.5 1.14-.85.76-1.32 1.83-1.4 3.21h2.24c.06-.82.3-1.41.72-1.78.42-.37.98-.56 1.68-.56.63 0 1.13.15 1.5.46.37.31.56.77.56 1.38v.83c-.76-.08-1.57-.12-2.43-.12-1.55 0-2.77.34-3.66 1.02-.89.68-1.34 1.67-1.34 2.97 0 1.25.43 2.22 1.28 2.91.85.69 1.96 1.04 3.32 1.04 1.25 0 2.26-.41 3.03-1.23v1.07h2.15V8.12c0-1.02-.34-1.85-1.03-2.48z" />
-    <path d="M21.78 18.23c-2.43 1.77-5.55 2.77-8.78 2.77-4.14 0-7.93-1.53-11-4.1-.24-.2-.03-.5.25-.34 3.03 1.77 6.64 2.84 10.42 2.84 2.93 0 5.76-.79 8.28-2.22.42-.24.77.25.33.62l.5-.57z" />
+// 5. Apple (Official Apple Silhouette)
+export const AppleLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 85 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <path d="M15.2 16.5c-.7 1-1.4 2-2.5 2-1.1 0-1.4-.7-2.7-.7-1.3 0-1.7.7-2.7.7-1.1 0-1.9-1.1-2.6-2.1C3.5 14.4 2.4 10.7 3.9 8.2c.7-1.3 2-2.1 3.4-2.1 1.1 0 2.1.7 2.7.7.6 0 1.9-.9 3.2-.8.6 0 2.1.2 3.1 1.7-.1.1-1.8 1.1-1.8 3.2 0 2.5 2.2 3.4 2.2 3.4-.1.1-.3 1.2-1.1 2.2zM12.9 5.8c.6-.7 1-1.7.9-2.6-.9 0-1.8.6-2.4 1.3-.5.6-1 1.6-.9 2.5 1 .1 1.8-.5 2.4-1.2z" fill="#FFFFFF" transform="scale(1.15) translate(-1, 0)"/>
+    <text x="28" y="22" fill="#E2E8F0" fontSize="18" fontWeight="600" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.3px">Apple</text>
   </svg>
 );
 
-export const NvidiaLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M8.91 7.15c0-.12.03-.23.09-.32.06-.09.15-.14.26-.14h2.51c.11 0 .2.05.26.14.06.09.09.2.09.32v8.94c0 .12-.03.23-.09.32-.06.09-.15.14-.26.14H9.26c-.11 0-.2-.05-.26-.14-.06-.09-.09-.2-.09-.32V7.15zm-4.3 1.83c0-.12.03-.23.09-.32.06-.09.15-.14.26-.14h2.51c.11 0 .2.05.26.14.06.09.09.2.09.32v5.28c0 .12-.03.23-.09.32-.06.09-.15.14-.26.14H4.96c-.11 0-.2-.05-.26-.14-.06-.09-.09-.2-.09-.32V8.98zm8.6-3.66c0-.12.03-.23.09-.32.06-.09.15-.14.26-.14h2.51c.11 0 .2.05.26.14.06.09.09.2.09.32v12.6c0 .12-.03.23-.09.32-.06.09-.15.14-.26.14h-2.51c-.11 0-.2-.05-.26-.14-.06-.09-.09-.2-.09-.32V5.32zm4.3 2.74c0-.12.03-.23.09-.32.06-.09.15-.14.26-.14h2.51c.11 0 .2.05.26.14.06.09.09.2.09.32v7.12c0 .12-.03.23-.09.32-.06.09-.15.14-.26.14h-2.51c-.11 0-.2-.05-.26-.14-.06-.09-.09-.2-.09-.32V8.06z" />
+// 6. NVIDIA (Official Green Eye Logo + 'NVIDIA')
+export const NvidiaLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 110 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 5)">
+      <path d="M9.8 16.2c-4.2 0-7.8-3.4-7.8-7.6 0-3.6 2.5-6.6 6-7.4v2.2C5.7 4 4 6 4 8.6c0 3.2 2.6 5.8 5.8 5.8 2.2 0 4.1-1.2 5.1-3h2.3c-1.2 3-4.1 4.8-7.4 4.8zm0-4.3c-1.8 0-3.3-1.5-3.3-3.3 0-1.8 1.5-3.3 3.3-3.3 1.4 0 2.6.9 3 2.2h2.2c-.5-2.5-2.6-4.4-5.2-4.4-2.9 0-5.3 2.4-5.3 5.3s2.4 5.3 5.3 5.3c2 0 3.7-1.1 4.6-2.7H17c-.9 2.3-3 3.9-5.4 3.9z" fill="#76B900" transform="scale(1.2)"/>
+    </g>
+    <text x="32" y="22" fill="#E2E8F0" fontSize="17" fontWeight="800" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="0.5px">NVIDIA</text>
   </svg>
 );
 
-export const OpenAILogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M22.28 9.37a5.98 5.98 0 0 0-.52-4.94A6.08 6.08 0 0 0 17.14 1.5a6.05 6.05 0 0 0-4.69 0A6.08 6.08 0 0 0 7.83 3.6a6.03 6.03 0 0 0-4.14 2.87 6.05 6.05 0 0 0-.54 4.97A6.05 6.05 0 0 0 1.25 15a6.08 6.08 0 0 0 4.62 2.93 6.03 6.03 0 0 0 4.69 0 6.08 6.08 0 0 0 4.62-2.13 6.03 6.03 0 0 0 4.14-2.87 6.05 6.05 0 0 0 .54-4.97 6.05 6.05 0 0 0 2.42-4.59zm-7.6 11.23a4.57 4.57 0 0 1-3.68-.02 4.55 4.55 0 0 1-1.37-.88l1.37-2.37a2.97 2.97 0 0 0 2.42 1.34 2.99 2.99 0 0 0 2.8-1.95l1.62.94a4.57 4.57 0 0 1-3.16 2.98zm-6.17-2.14a4.56 4.56 0 0 1-2.58-2.63 4.57 4.57 0 0 1 .05-3.68l2.37 1.37a2.97 2.97 0 0 0-.03 2.76 2.99 2.99 0 0 0 2.39 1.76l-.94 1.62a4.54 4.54 0 0 1-1.26-1.2zm-2.52-7.51a4.56 4.56 0 0 1 1.09-3.52 4.57 4.57 0 0 1 3.63-1.05l-1.37 2.37a2.97 2.97 0 0 0-2.42 1.41 2.99 2.99 0 0 0-.41 2.94l-1.62-.94a4.54 4.54 0 0 1 1.1-1.21zm10.74-2.8a4.56 4.56 0 0 1 2.58 2.63 4.57 4.57 0 0 1-.05 3.68l-2.37-1.37a2.97 2.97 0 0 0 .03-2.76 2.99 2.99 0 0 0-2.39-1.76l.94-1.62a4.54 4.54 0 0 1 1.26 1.2zm2.52 7.51a4.56 4.56 0 0 1-1.09 3.52 4.57 4.57 0 0 1-3.63 1.05l1.37-2.37a2.97 2.97 0 0 0 2.42-1.41 2.99 2.99 0 0 0 .41-2.94l1.62.94a4.54 4.54 0 0 1-1.1 1.21zM12 14.95a2.95 2.95 0 1 1 0-5.9 2.95 2.95 0 0 1 0 5.9z" />
+// 7. Netflix (Official Red Curved Wordmark)
+export const NetflixLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 95 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <text x="0" y="23" fill="#E50914" fontSize="20" fontWeight="900" fontFamily="Impact, Arial Black, sans-serif" letterSpacing="2px">NETFLIX</text>
   </svg>
 );
 
-export const AnthropicLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <polygon points="13.82 3 7.82 21 10.37 21 11.83 16.5 17.5 16.5 18.96 21 21.51 21 15.51 3 13.82 3" />
-    <polygon points="2.49 21 8.5 3 11.05 3 5.04 21 2.49 21" />
+// 8. OpenAI (Official Rosette + 'OpenAI')
+export const OpenAILogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 115 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 5)">
+      <path d="M19.8 8.4a5.3 5.3 0 0 0-.5-4.4 5.4 5.4 0 0 0-4.1-2.6 5.4 5.4 0 0 0-4.2.8 5.4 5.4 0 0 0-3.7 2.6 5.4 5.4 0 0 0-.5 4.4 5.4 5.4 0 0 0-2.2 4.1 5.4 5.4 0 0 0 1.2 4.4 5.4 5.4 0 0 0 4.1 2.6 5.4 5.4 0 0 0 4.2-.8 5.4 5.4 0 0 0 3.7-2.6 5.4 5.4 0 0 0 .5-4.4 5.4 5.4 0 0 0 2.2-4.1 5.4 5.4 0 0 0-1.2-4.4zM10.7 20a4 4 0 0 1-3.2 0 4 4 0 0 1-1.2-.8l1.2-2.1a2.6 2.6 0 0 0 2.1 1.2 2.6 2.6 0 0 0 2.5-1.7l1.4.8a4 4 0 0 1-2.8 2.6zM5.3 18a4 4 0 0 1-2.3-2.3 4 4 0 0 1 0-3.3l2.1 1.2a2.6 2.6 0 0 0 0 2.4 2.6 2.6 0 0 0 2.1 1.5l-.8 1.4a4 4 0 0 1-1.1-.9zM3 11.4a4 4 0 0 1 1-3.1 4 4 0 0 1 3.2-.9l-1.2 2.1a2.6 2.6 0 0 0-2.1 1.2 2.6 2.6 0 0 0-.4 2.6l-1.4-.8a4 4 0 0 1 .9-1.1zm9.5-2.5a4 4 0 0 1 2.3 2.3 4 4 0 0 1 0 3.3l-2.1-1.2a2.6 2.6 0 0 0 0-2.4 2.6 2.6 0 0 0-2.1-1.5l.8-1.4a4 4 0 0 1 1.1.9zm2.2 6.6a4 4 0 0 1-1 3.1 4 4 0 0 1-3.2.9l1.2-2.1a2.6 2.6 0 0 0 2.1-1.2 2.6 2.6 0 0 0 .4-2.6l1.4.8a4 4 0 0 1-.9 1.1zm-4.1-2.2a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2z" fill="#FFFFFF"/>
+    </g>
+    <text x="28" y="22" fill="#E2E8F0" fontSize="18" fontWeight="600" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.3px">OpenAI</text>
   </svg>
 );
 
-export const StripeLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.96 15.827.42 13.257.42c-5.922 0-9.871 3.097-9.871 8.274 0 6.425 8.847 5.419 8.847 8.214 0 1.077-.923 1.543-2.227 1.543-2.616 0-5.355-1.18-7.142-2.238L1.93 21.8c2.033 1.085 4.887 1.78 7.859 1.78 6.177 0 10.158-3.045 10.158-8.274-.01-6.843-8.867-5.597-8.867-8.214z" />
+// 9. Stripe (Official Slanted 'stripe' Wordmark)
+export const StripeLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 85 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <text x="2" y="23" fill="#635BFF" fontSize="23" fontWeight="800" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.8px">stripe</text>
   </svg>
 );
 
-export const GitHubLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+// 10. Spotify (Official Green Soundwaves + 'Spotify')
+export const SpotifyLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 115 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 5)">
+      <circle cx="11" cy="11" r="11" fill="#1DB954" />
+      <path d="M16.5 7.8c-2.8-.7-6.2-.4-8.7.9-.4.2-.6.7-.4 1.1.2.4.7.6 1.1.4 2.2-1.1 5.3-1.4 7.7-.8.5.1.9-.2 1-.7.2-.5-.2-.9-.7-.9zm-.7 3.3c-2.4-.6-5.3-.3-7.4.8-.4.2-.5.6-.3 1 .2.4.6.5 1 .3 1.8-1 4.4-1.2 6.5-.7.4.1.8-.2.9-.6.1-.4-.2-.8-.7-.8zm-.8 3.3c-2-.5-4.4-.3-6.1.6-.3.2-.4.5-.2.8.2.3.5.4.8.2 1.5-.7 3.6-.9 5.3-.5.3.1.7-.1.7-.5.1-.3-.1-.6-.5-.6z" fill="#06070d"/>
+    </g>
+    <text x="30" y="22" fill="#E2E8F0" fontSize="18" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.4px">Spotify</text>
   </svg>
 );
 
-export const CloudflareLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M19.34 11.23c-.45-3.08-3.07-5.43-6.27-5.43-2.6 0-4.83 1.55-5.83 3.78C6.9 9.21 6.51 9.07 6.08 9.07c-2.45 0-4.44 1.99-4.44 4.44 0 .34.05.67.12.99H1.47c-.81 0-1.47.66-1.47 1.47 0 .81.66 1.47 1.47 1.47h17.87c1.9 0 3.44-1.54 3.44-3.44 0-1.63-1.13-2.99-2.67-3.34l-.77-.43zm-1.05 4.38H1.47c-.26 0-.47-.21-.47-.47s.21-.47.47-.47h16.82c1.35 0 2.44 1.09 2.44 2.44 0 1.35-1.09 2.44-2.44 2.44z" />
+// 11. Uber (Official Bold 'Uber' Wordmark)
+export const UberLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 75 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <text x="2" y="23" fill="#FFFFFF" fontSize="23" fontWeight="800" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.5px">Uber</text>
   </svg>
 );
 
-export const DatadogLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.93c-2.73 0-4.94-2.21-4.94-4.93s2.21-4.93 4.94-4.93c1.28 0 2.44.49 3.33 1.28l-1.41 1.41c-.51-.46-1.18-.76-1.92-.76-1.65 0-3 1.35-3 3s1.35 3 3 3c.74 0 1.41-.3 1.92-.76l1.41 1.41c-.89.79-2.05 1.28-3.33 1.28z" />
+// 12. Airbnb (Official Coral Bélo + 'airbnb')
+export const AirbnbLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 115 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 4)">
+      <path d="M11 1.5c-3.5 0-6 2.5-6 6.5 0 4.5 4.5 9 6 12 1.5-3 6-7.5 6-12 0-4-2.5-6.5-6-6.5zm0 15c-1.8 0-3.2-1.4-3.2-3.2s1.4-3.2 3.2-3.2 3.2 1.4 3.2 3.2-1.4 3.2-3.2 3.2z" fill="#FF5A5F" />
+    </g>
+    <text x="28" y="22" fill="#E2E8F0" fontSize="19" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.6px">airbnb</text>
   </svg>
 );
 
-export const SalesforceLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M19.28 9.53c-.34-2.61-2.58-4.63-5.3-4.63-1.63 0-3.08.73-4.06 1.88-.74-.53-1.65-.85-2.63-.85-2.43 0-4.43 1.83-4.71 4.19C1.04 10.63 0 12.19 0 14c0 2.21 1.79 4 4 4h15c2.76 0 5-2.24 5-5 0-2.42-1.72-4.44-4.72-3.47z" />
+// 13. GitHub (Official Octocat + 'GitHub')
+export const GitHubLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 115 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 4)">
+      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-1.99 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.72 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z" fill="#FFFFFF"/>
+    </g>
+    <text x="30" y="22" fill="#E2E8F0" fontSize="18" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.3px">GitHub</text>
   </svg>
 );
 
-export const AdobeLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <polygon points="13.96 2 9.04 14.54 13.06 14.54 14.86 9.8 19.38 21.03 24 21.03 16.54 2 13.96 2" />
-    <polygon points="7.46 2 0 21.03 4.62 21.03 10.04 6.96 7.46 2" />
+// 14. LinkedIn (Official Blue 'in' + 'LinkedIn')
+export const LinkedInLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 120 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 5)">
+      <rect x="0" y="0" width="22" height="22" rx="4" fill="#0A66C2" />
+      <path d="M5.5 8.5h2.5V17H5.5V8.5zm1.3-4.2c.8 0 1.5.6 1.5 1.4 0 .8-.7 1.4-1.5 1.4s-1.4-.6-1.4-1.4c0-.8.6-1.4 1.4-1.4zm5.7 4.2h2.4v1.2h.1c.3-.7 1.3-1.4 2.6-1.4 2.8 0 3.3 1.8 3.3 4.2V17h-2.5v-3.8c0-.9 0-2.1-1.3-2.1s-1.5 1-1.5 2v3.9h-2.5V8.5z" fill="#FFFFFF"/>
+    </g>
+    <text x="30" y="22" fill="#E2E8F0" fontSize="18" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.3px">LinkedIn</text>
   </svg>
 );
 
-export const NetflixLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M5.398 0v24c1.168-.285 2.336-.532 3.541-.741V0H5.398zm9.663 0v22.519c1.205.209 2.373.456 3.541.741V0h-3.541z" />
-    <path d="M5.398 0h3.541l6.122 22.519c-1.168-.209-2.336-.456-3.541-.741L5.398 0z" opacity=".8" />
+// 15. Salesforce (Official Blue Cloud + 'salesforce')
+export const SalesforceLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 135 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 4)">
+      <path d="M10 2a6 6 0 0 1 5.5 3.6 4.5 4.5 0 0 1 4.5 4.4c0 .3 0 .6-.1.8A5 5 0 0 1 18 20H5a5 5 0 0 1-1.5-9.7A6 6 0 0 1 10 2z" fill="#00A1E0" />
+    </g>
+    <text x="26" y="22" fill="#E2E8F0" fontSize="17" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.4px">salesforce</text>
   </svg>
 );
 
-export const UberLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm-2-7h4v2h-4z" />
+// 16. Adobe (Official Red 'A' Square + 'Adobe')
+export const AdobeLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 100 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 5)">
+      <rect width="22" height="22" rx="3" fill="#FA0F00" />
+      <path d="M13.8 4.5L18 17.5h-3.2l-1.4-4.5H9.8l2.5-7.5h1.5zM8.2 4.5L4 17.5h3.2l1.4-4.5h3.6l-4-8.5z" fill="#FFFFFF" />
+    </g>
+    <text x="30" y="22" fill="#E2E8F0" fontSize="18" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.3px">Adobe</text>
   </svg>
 );
 
-export const TeslaLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M12 4.41c3.15 0 6.03.88 8.44 2.37l1.09-2.36C18.66 2.74 15.46 1.8 12 1.8c-3.46 0-6.66.94-9.53 2.62l1.09 2.36c2.41-1.49 5.29-2.37 8.44-2.37zm0 4.14c-1.63 0-3.13.39-4.45 1.07l.82 2.58C9.37 11.75 10.63 11.5 12 11.5s2.63.25 3.63.7l.82-2.58c-1.32-.68-2.82-1.07-4.45-1.07zm1.14 5.34l-.14 8.31h-2l-.14-8.31c-.28-.05-.57-.08-.86-.08-1.55 0-2.98.54-4.11 1.45l-.94-1.98C6.54 12.15 8.68 11.5 11 11.5c.33 0 .67.02 1 .06.33-.04.67-.06 1-.06 2.32 0 4.46.65 6.05 1.74l-.94 1.98c-1.13-.91-2.56-1.45-4.11-1.45-.29 0-.58.03-.86.08z" />
+// 17. Cisco (Official Wave Bridge + 'cisco')
+export const CiscoLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 95 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 6)" fill="#049FD9">
+      <rect x="0" y="8" width="2" height="6" rx="1"/>
+      <rect x="4" y="4" width="2" height="10" rx="1"/>
+      <rect x="8" y="0" width="2" height="14" rx="1"/>
+      <rect x="12" y="4" width="2" height="10" rx="1"/>
+      <rect x="16" y="8" width="2" height="6" rx="1"/>
+    </g>
+    <text x="26" y="22" fill="#E2E8F0" fontSize="18" fontWeight="700" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="-0.5px">cisco</text>
   </svg>
 );
 
-export const LinkedInLogo: React.FC<CompanyLogoProps> = ({ className = "h-5 w-auto", size }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className} style={size ? { height: size } : undefined}>
-    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+// 18. Oracle (Official Red Oval + 'ORACLE')
+export const OracleLogo: React.FC<CompanyLogoProps> = ({ className = "h-8 w-auto" }) => (
+  <svg viewBox="0 0 110 32" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0, 7)">
+      <rect x="0" y="0" width="18" height="18" rx="9" fill="none" stroke="#C74634" strokeWidth="4"/>
+    </g>
+    <text x="26" y="22" fill="#C74634" fontSize="18" fontWeight="800" fontFamily="system-ui, -apple-system, sans-serif" letterSpacing="1px">ORACLE</text>
   </svg>
 );

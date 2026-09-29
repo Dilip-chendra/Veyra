@@ -44,7 +44,7 @@ async function verifyLanding() {
 
   const checks = [
     { name: "01. Hero Section", passed: lowerText.includes("the interview") && lowerText.includes("adapts to you") },
-    { name: "02. Brand Ecosystem Wall", passed: lowerText.includes("built for the modern ai workflow") },
+    { name: "02. Brand Ecosystem Wall", passed: lowerText.includes("built for candidates targeting top mncs") },
     { name: "03. Kinetic Manifesto", passed: lowerText.includes("an interview") && lowerText.includes("is not a script") },
     { name: "04. Conveyor vs Dynamic Flow", passed: lowerText.includes("conveyor belt") && lowerText.includes("dynamic cross-examination") },
     { name: "05. Live Adaptive Dialogue", passed: lowerText.includes("every question emerges from your last sentence") },
@@ -89,6 +89,15 @@ async function verifyLanding() {
   await new Promise(r => setTimeout(r, 400));
   const roadmapVisible = await page.evaluate(() => document.body.innerText.includes("Your Tailored 7-Day Sprint Curriculum"));
   console.log(`Roadmap tab clicked and rendered: ${roadmapVisible ? "✓ YES" : "✗ NO"}`);
+
+  // Capture Marquee Section screenshot
+  await page.evaluate(() => {
+    const marqueeSection = document.querySelector("section.py-20");
+    if (marqueeSection) marqueeSection.scrollIntoView();
+  });
+  await new Promise(r => setTimeout(r, 600));
+  await page.screenshot({ path: "tests/qa_marquee_desktop.png" });
+  console.log("Saved: tests/qa_marquee_desktop.png");
 
   // 4. Test Mobile Viewport
   console.log("\nTesting Mobile Viewport (390x844)...");

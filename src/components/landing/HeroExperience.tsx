@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Volume2, Sparkles, Shield, Cpu, Play, Square } from "lucide-react";
+import { ArrowRight, Volume2, Sparkles, Shield, Cpu, Square, CheckCircle2 } from "lucide-react";
 
 // Real Cartesia PCM Audio Streaming Player
 async function playCartesiaVoice(gender: "male" | "female", text: string): Promise<AudioBufferSourceNode | null> {
@@ -88,7 +88,7 @@ export function HeroExperience() {
       experience: "Ex-Staff Distributed Systems",
       photo: "/avatars/interviewer_male.jpg",
       voiceSampleText: "Hello. I've analyzed your distributed queue repository and your resume. Before we write any code, walk me through how your Raft cluster handles leader heartbeats during an asymmetric network partition.",
-      activeProbe: "“Walk me through how your Raft cluster handles leader heartbeats during an asymmetric network partition.”",
+      activeProbe: "Walk me through how your Raft cluster handles leader heartbeats during an asymmetric network partition.",
       contextTag: "Raft Quorum · Distributed Consensus",
       turnNumber: "Turn 03"
     },
@@ -98,7 +98,7 @@ export function HeroExperience() {
       experience: "Cloud Platforms & Core Infrastructure",
       photo: "/avatars/interviewer_female.jpg",
       voiceSampleText: "Welcome. Let's dig into your event-driven data pipeline. When your Kafka consumer lag spikes by 500 percent during peak load, what backpressure strategy prevents downstream database connection exhaustion?",
-      activeProbe: "“When your Kafka consumer lag spikes 500%, what backpressure strategy prevents database connection pool exhaustion?”",
+      activeProbe: "When your Kafka consumer lag spikes 500%, what backpressure strategy prevents database connection pool exhaustion?",
       contextTag: "Kafka Backpressure · Connection Pool Exhaustion",
       turnNumber: "Turn 04"
     }
@@ -162,7 +162,7 @@ export function HeroExperience() {
     const rect = stageRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMousePos({ x: x * 14, y: y * -14 });
+    setMousePos({ x: x * 10, y: y * -10 });
   };
 
   const handleMouseLeave = () => {
@@ -171,7 +171,7 @@ export function HeroExperience() {
 
   return (
     <section 
-      className="relative min-h-[92vh] flex flex-col justify-center pt-24 pb-16 px-4 sm:px-6 lg:px-8 bg-[#06070d] text-white overflow-hidden"
+      className="relative min-h-[90vh] flex flex-col justify-center pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-[#06070d] text-white overflow-hidden"
     >
       {/* Background ambient lighting */}
       <div 
@@ -188,7 +188,7 @@ export function HeroExperience() {
       />
 
       <div className="relative max-w-7xl mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           
           {/* Left Column: Hero Narrative & Controls */}
           <div className="lg:col-span-7 flex flex-col items-start text-left z-10">
@@ -313,16 +313,28 @@ export function HeroExperience() {
 
           </div>
 
-          {/* Right Column: 3D Focal Interviewer Stage with Floating Product HUD */}
+          {/* Right Column: Properly Aligned Focal Interviewer Stage */}
           <div 
             ref={stageRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            className="lg:col-span-5 relative flex justify-center perspective-[1200px]"
+            className="lg:col-span-5 flex flex-col items-center justify-center perspective-[1200px] w-full"
           >
-            {/* Focal Portrait Card with reactive mouse tilt */}
+            {/* Top context badge (fully visible, perfectly aligned) */}
+            <div className="w-full max-w-[420px] mb-3 flex items-center justify-between text-xs font-mono text-slate-400 px-1">
+              <div className="flex items-center gap-2 text-indigo-300">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Repository Ingested</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-emerald-400 text-[11px]">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Live Audio 24kHz</span>
+              </div>
+            </div>
+
+            {/* Focal Portrait Card with smooth 3D mouse parallax tilt */}
             <div 
-              className="relative w-full max-w-[430px] rounded-3xl overflow-hidden border border-white/20 bg-gradient-to-b from-white/[0.1] to-white/[0.02] p-2.5 shadow-2xl shadow-black/80 transition-transform duration-200 ease-out"
+              className="relative w-full max-w-[420px] rounded-3xl border border-white/20 bg-gradient-to-b from-white/[0.12] to-white/[0.02] p-2.5 shadow-2xl shadow-black/80 transition-transform duration-200 ease-out"
               style={{
                 transform: `rotateY(${mousePos.x}deg) rotateX(${mousePos.y}deg)`,
                 transformStyle: "preserve-3d"
@@ -330,27 +342,27 @@ export function HeroExperience() {
             >
               
               {/* Photo Viewport */}
-              <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden bg-slate-950 border border-white/10">
+              <div className="relative aspect-[4/4.7] w-full rounded-2xl overflow-hidden bg-slate-950 border border-white/10">
                 <Image
                   src={current.photo}
                   alt={current.name}
                   fill
                   sizes="(max-width: 768px) 90vw, 420px"
-                  className="object-cover object-top filter brightness-[0.96] contrast-[1.06]"
+                  className="object-cover object-top filter brightness-[0.98] contrast-[1.05]"
                   priority
                 />
 
-                {/* Subtle top and bottom dark gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#06070d] via-transparent to-black/30 pointer-events-none" />
+                {/* Subtle dark gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#06070d] via-transparent to-black/25 pointer-events-none" />
 
-                {/* Floating HUD: Live Status Pill */}
-                <div className="absolute top-4 left-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-[11px] font-mono text-white shadow-lg">
+                {/* Top Status Overlay */}
+                <div className="absolute top-3 left-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-white/15 text-[11px] font-mono text-white shadow-lg">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   <span>{current.turnNumber} · ACTIVE COGNITION</span>
                 </div>
 
-                {/* Floating HUD: Audio Equalizer Pill */}
-                <div className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-[11px] font-mono text-indigo-300 shadow-lg">
+                {/* Top Audio Stream Equalizer */}
+                <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-white/15 text-[11px] font-mono text-indigo-300 shadow-lg">
                   <Volume2 className="w-3.5 h-3.5" />
                   <span>{isPlaying ? "STREAMING" : "READY"}</span>
                   <div className="flex items-center gap-0.5 ml-1">
@@ -360,16 +372,16 @@ export function HeroExperience() {
                   </div>
                 </div>
 
-                {/* Floating HUD: Active Spoken Probe Card at bottom of photo */}
-                <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-black/80 backdrop-blur-md border border-white/15 shadow-xl">
-                  <div className="flex items-center justify-between text-[10px] font-mono text-indigo-400 uppercase tracking-wider mb-1.5">
+                {/* Sleek Probe Overlay at bottom of portrait */}
+                <div className="absolute bottom-3 left-3 right-3 p-3.5 rounded-xl bg-black/80 backdrop-blur-md border border-white/15 shadow-xl">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-indigo-300 uppercase tracking-wider mb-1">
                     <span>Active Inquiry Probe</span>
                     <span className="text-slate-400">{current.contextTag}</span>
                   </div>
-                  <p className="text-xs sm:text-[13px] text-white font-medium leading-relaxed italic font-serif">
-                    {current.activeProbe}
+                  <p className="text-xs sm:text-[13px] text-white font-medium leading-snug italic font-serif">
+                    &ldquo;{current.activeProbe}&rdquo;
                   </p>
-                  <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                  <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-slate-400">
                     <span className="text-slate-200 font-semibold">{current.name}</span>
                     <span>{current.role}</span>
                   </div>
@@ -377,26 +389,12 @@ export function HeroExperience() {
 
               </div>
 
-              {/* Floating External Badge: Zero Scripting Guarantee */}
-              <div 
-                className="absolute -bottom-4 -left-4 hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-xl bg-slate-900/90 backdrop-blur-md border border-white/20 shadow-xl"
-                style={{ transform: "translateZ(30px)" }}
-              >
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span className="text-xs font-mono text-slate-200">
-                  Sub-200ms Voice Turn-Taking
-                </span>
-              </div>
+            </div>
 
-              {/* Floating External Badge: Candidate Stack Ingestion */}
-              <div 
-                className="absolute -top-4 -right-4 hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-950/90 backdrop-blur-md border border-indigo-500/30 text-indigo-200 text-xs font-mono shadow-xl"
-                style={{ transform: "translateZ(30px)" }}
-              >
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Repository Ingested</span>
-              </div>
-
+            {/* Bottom feature pill (fully visible, perfectly aligned) */}
+            <div className="w-full max-w-[420px] mt-3 flex items-center justify-between text-xs font-mono text-slate-400 px-1">
+              <span className="text-slate-400">Sub-200ms Turn-Taking</span>
+              <span className="text-indigo-400">Zero Scripting Engine</span>
             </div>
 
           </div>
