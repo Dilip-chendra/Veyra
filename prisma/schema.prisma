@@ -8,15 +8,17 @@ generator client {
 }
 
 model User {
-  id           String            @id @default(cuid())
-  email        String            @unique
-  passwordHash String
-  name         String
-  role         String            @default("CANDIDATE") // CANDIDATE, EMPLOYER, ADMIN
-  orgId        String?
-  organization Organization?     @relation(fields: [orgId], references: [id])
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id               String            @id @default(cuid())
+  email            String            @unique
+  passwordHash     String
+  name             String
+  role             String            @default("CANDIDATE") // CANDIDATE, EMPLOYER, ADMIN
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  orgId            String?
+  organization     Organization?     @relation(fields: [orgId], references: [id])
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   profile          CandidateProfile?
   resumes          Resume[]

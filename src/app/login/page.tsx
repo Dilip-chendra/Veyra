@@ -51,9 +51,22 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-rose-950/70 border border-rose-800 rounded-xl text-xs text-rose-200">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-            <span>{error}</span>
+          <div className="flex flex-col gap-1.5 p-3 bg-rose-950/70 border border-rose-800 rounded-xl text-xs text-rose-200">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <span>{error}</span>
+            </div>
+            {error.toLowerCase().includes("invalid email or password") && (
+              <div className="pl-6 text-[11px] text-slate-300">
+                Forgotten your password?{" "}
+                <Link
+                  href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ""}`}
+                  className="text-indigo-400 hover:text-indigo-300 font-semibold underline underline-offset-2"
+                >
+                  Reset your password here
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -76,6 +89,12 @@ export default function LoginPage() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-slate-300">Password</label>
+              <Link
+                href={`/forgot-password${email ? `?email=${encodeURIComponent(email)}` : ""}`}
+                className="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                Forgot password?
+              </Link>
             </div>
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
