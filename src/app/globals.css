@@ -18,60 +18,156 @@
   --accent-foreground: 210 40% 98%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  color: #f8fafc;
-  background-color: #020617;
+  color: #f1f5f9;
+  background-color: #06070d;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom modern dark scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ── Scrollbar ────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #06070d; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+/* ── Marquee ──────────────────────────────────────────────────────────── */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
-::-webkit-scrollbar-track {
-  background: #090d16;
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
 }
-::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 4px;
+.marquee-track-left {
+  display: flex;
+  width: max-content;
+  animation: marquee-left 35s linear infinite;
+  will-change: transform;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+.marquee-track-right {
+  display: flex;
+  width: max-content;
+  animation: marquee-right 40s linear infinite;
+  will-change: transform;
+}
+.marquee-track-left:hover,
+.marquee-track-right:hover {
+  animation-play-state: paused;
 }
 
-.mirror {
-  transform: scaleX(-1);
+/* ── Grain overlay ────────────────────────────────────────────────────── */
+.veyra-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ── Waveform bars ────────────────────────────────────────────────────── */
+@keyframes wave-bar {
+  0%, 100% { transform: scaleY(0.3); }
+  50%       { transform: scaleY(1); }
+}
+.wave-bar {
+  transform-origin: center bottom;
+  animation: wave-bar 0.8s ease-in-out infinite;
+  will-change: transform;
 }
 
+/* ── Text reveal (clip-path) ─────────────────────────────────────────── */
+@keyframes clip-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0% 0 0); }
+}
+.clip-reveal {
+  animation: clip-reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ── Fade up ──────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeUp {
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 .animate-fadeIn {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Lifelike Human Micro-Physics Animations */
+/* ── Slow float ──────────────────────────────────────────────────────── */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+/* ── Pulse glow ──────────────────────────────────────────────────────── */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(99,102,241,0.4); }
+  50%       { box-shadow: 0 0 28px rgba(99,102,241,0.8), 0 0 48px rgba(99,102,241,0.3); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2.4s ease-in-out infinite;
+}
+
+/* ── Orbit ──────────────────────────────────────────────────────────── */
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(70px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(70px) rotate(-360deg); }
+}
+@keyframes orbit-reverse {
+  from { transform: rotate(360deg) translateX(52px) rotate(-360deg); }
+  to   { transform: rotate(0deg) translateX(52px) rotate(0deg); }
+}
+
+/* ── Card tilt (CSS-only) ─────────────────────────────────────────────── */
+.tilt-card {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+.tilt-card:hover {
+  transform: translateY(-4px) scale(1.015);
+}
+
+/* ── Lifelike Human Micro-Physics (keep for LiveRoom) ─────────────────── */
 @keyframes humanBreathing {
-  0% { transform: translateY(0px) scale(1.0); }
-  50% { transform: translateY(-5px) scale(1.012); }
+  0%   { transform: translateY(0px) scale(1.0); }
+  50%  { transform: translateY(-5px) scale(1.012); }
   100% { transform: translateY(0px) scale(1.0); }
 }
-
 @keyframes humanSpeakingCadence {
-  0% { transform: translateY(0px) scale(1.0) rotate(0deg); }
-  25% { transform: translateY(-4px) scale(1.016) rotate(0.4deg); }
-  50% { transform: translateY(2px) scale(1.008) rotate(-0.3deg); }
-  75% { transform: translateY(-3px) scale(1.014) rotate(0.2deg); }
+  0%   { transform: translateY(0px) scale(1.0) rotate(0deg); }
+  25%  { transform: translateY(-4px) scale(1.016) rotate(0.4deg); }
+  50%  { transform: translateY(2px) scale(1.008) rotate(-0.3deg); }
+  75%  { transform: translateY(-3px) scale(1.014) rotate(0.2deg); }
   100% { transform: translateY(0px) scale(1.0) rotate(0deg); }
 }
+.animate-human-breathing { animation: humanBreathing 3.6s ease-in-out infinite; }
+.animate-human-speaking  { animation: humanSpeakingCadence 2.0s ease-in-out infinite; }
+.mirror { transform: scaleX(-1); }
 
-.animate-human-breathing {
-  animation: humanBreathing 3.6s ease-in-out infinite;
-}
-
-.animate-human-speaking {
-  animation: humanSpeakingCadence 2.0s ease-in-out infinite;
+/* ── Reduced motion ──────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .marquee-track-left,
+  .marquee-track-right {
+    animation: none !important;
+  }
 }

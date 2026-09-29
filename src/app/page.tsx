@@ -1,63 +1,143 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { BrandLogo } from "@/components/ui/BrandLogo";
 
-// ─── Intersection Observer hook ───────────────────────────────────────────────
-function useReveal<T extends HTMLElement = HTMLDivElement>(threshold = 0.15) {
-  const ref = useRef<T>(null);
-  const [visible, setVisible] = useState(false);
+// ─────────────────────────────────────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────────────────────────────────────
 
+function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const prefersReduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (prefersReduced) {
-      setVisible(true);
-      return;
-    }
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          obs.disconnect();
-        }
-      },
-      { threshold }
-    );
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) { setVisible(true); return; }
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { threshold });
     obs.observe(el);
     return () => obs.disconnect();
   }, [threshold]);
-
   return { ref, visible };
 }
 
-// ─── Waveform bars ────────────────────────────────────────────────────────────
-function Waveform({ active }: { active: boolean }) {
-  const bars = [4, 7, 11, 8, 14, 10, 6, 13, 9, 5, 12, 7, 4];
+function useSectionReveal() {
+  const { ref, visible } = useInView(0.08);
+  return {
+    ref,
+    style: {
+      opacity: visible ? 1 : 0,
+      transform: visible ? "translateY(0)" : "translateY(40px)",
+      transition: "opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)",
+    },
+  };
+}
+
+// Cartesia voice playback
+async function playCartesiaVoice(gender: "male" | "female", text: string): Promise<AudioBufferSourceNode | null> {
+  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const ctx = new AudioCtx({ sampleRate: 44100 });
+  if (ctx.state === "suspended") await ctx.resume();
+
+  const res = await fetch("/api/cartesia/tts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, gender, isPreview: true }),
+  });
+  if (!res.ok) throw new Error("TTS failed");
+
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let buf = "";
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split("\n");
+    buf = lines.pop() ?? "";
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith("data:")) continue;
+      const jsonStr = trimmed.slice(5).trim();
+      if (!jsonStr || jsonStr === "[DONE]") continue;
+      try {
+        const ev = JSON.parse(jsonStr);
+        if (ev.data) {
+          const bin = atob(ev.data);
+          const b = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+          chunks.push(b);
+        }
+      } catch {}
+    }
+  }
+  if (!chunks.length) return null;
+  const total = chunks.reduce((a, c) => a + c.length, 0);
+  const combined = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { combined.set(c, off); off += c.length; }
+  const f32 = new Float32Array(combined.buffer, 0, Math.floor(combined.byteLength / 4));
+  const audioBuf = ctx.createBuffer(1, f32.length, 44100);
+  audioBuf.getChannelData(0).set(f32);
+  const src = ctx.createBufferSource();
+  src.buffer = audioBuf;
+  src.connect(ctx.destination);
+  src.start(0);
+  return src;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SHARED MICRO-COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-400">
+      <span className="w-4 h-px bg-indigo-500 opacity-60" />
+      {children}
+      <span className="w-4 h-px bg-indigo-500 opacity-60" />
+    </span>
+  );
+}
+
+function GlowDot({ color = "#6366f1" }: { color?: string }) {
   return (
     <span
-      className="inline-flex items-end gap-[2px]"
-      aria-hidden="true"
-      style={{ height: 20 }}
-    >
-      {bars.map((h, i) => (
+      className="inline-block w-2 h-2 rounded-full shrink-0"
+      style={{ background: color, boxShadow: `0 0 8px ${color}` }}
+    />
+  );
+}
+
+function WaveformBars({ active, bars = 9 }: { active: boolean; bars?: number }) {
+  const heights = [4, 7, 11, 15, 18, 14, 10, 7, 4];
+  return (
+    <span className="inline-flex items-end gap-[2px]" style={{ height: 20 }} aria-hidden>
+      {Array.from({ length: bars }).map((_, i) => (
         <span
           key={i}
+          className={active ? "wave-bar" : ""}
           style={{
+            display: "inline-block",
             width: 2,
-            height: active ? h : 3,
+            height: active ? heights[i % heights.length] : 3,
             borderRadius: 2,
-            background: active ? "#818cf8" : "#4f5a8a",
-            transition: active
-              ? `height 0.15s ease ${i * 0.04}s`
-              : "height 0.3s ease",
-            animationPlayState: active ? "running" : "paused",
+            background: active ? "#818cf8" : "#3f4673",
+            animationDelay: active ? `${i * 0.07}s` : "0s",
+            transition: active ? "none" : "height 0.4s ease",
           }}
         />
       ))}
@@ -65,1122 +145,1323 @@ function Waveform({ active }: { active: boolean }) {
   );
 }
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
-function RevealSection({
-  children,
-  className = "",
-  delay = 0,
-  style: extraStyle = {},
-}: {
-  children: React.ReactNode;
-  className?: string;
-  delay?: number;
-  style?: React.CSSProperties;
-}) {
-  const { ref, visible } = useReveal<HTMLElement>();
-  return (
-    <section
-      ref={ref as React.RefObject<HTMLElement>}
-      className={className}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(32px)",
-        transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms`,
-        ...extraStyle,
-      }}
-    >
-      {children}
-    </section>
-  );
+function PrimaryButton({ href, onClick, children }: { href?: string; onClick?: () => void; children: ReactNode }) {
+  const cls =
+    "inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-[14px] text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]";
+  const style = {
+    background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+    boxShadow: "0 0 0 1px rgba(99,102,241,0.3), 0 8px 32px rgba(99,102,241,0.25)",
+  };
+  if (href) return <Link href={href} className={cls} style={style}>{children}</Link>;
+  return <button type="button" onClick={onClick} className={cls} style={style}>{children}</button>;
 }
 
-// ─── Feature pill ─────────────────────────────────────────────────────────────
-function Pill({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/70 border border-indigo-800/50 text-[11px] font-semibold text-indigo-300 tracking-wide">
-      {children}
-    </span>
-  );
+function SecondaryButton({ href, onClick, children }: { href?: string; onClick?: () => void; children: ReactNode }) {
+  const cls =
+    "inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-[14px] text-slate-300 transition-all duration-200 hover:text-white hover:bg-white/5 border";
+  const style = { borderColor: "rgba(255,255,255,0.1)" };
+  if (href) return <Link href={href} className={cls} style={style}>{children}</Link>;
+  return <button type="button" onClick={onClick} className={cls} style={style}>{children}</button>;
 }
 
-// ─── Check icon ───────────────────────────────────────────────────────────────
-function Check() {
+// Arrow icon inline
+function Arrow() {
   return (
-    <svg
-      className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"
-      viewBox="0 0 16 16"
-      fill="none"
-    >
-      <circle cx="8" cy="8" r="7.5" stroke="#34d399" strokeWidth="1" />
-      <path
-        d="M4.5 8.25l2.5 2.5 4.5-5"
-        stroke="#34d399"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+      <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-// ─── Cross icon ───────────────────────────────────────────────────────────────
-function Cross() {
-  return (
-    <svg
-      className="w-4 h-4 text-rose-400 shrink-0 mt-0.5"
-      viewBox="0 0 16 16"
-      fill="none"
-    >
-      <circle cx="8" cy="8" r="7.5" stroke="#f87171" strokeWidth="1" />
-      <path
-        d="M5.5 5.5l5 5M10.5 5.5l-5 5"
-        stroke="#f87171"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// MARQUEE SECTION
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ─── Conversation bubble ──────────────────────────────────────────────────────
-function Bubble({
-  speaker,
-  text,
-  delay = 0,
-}: {
-  speaker: "interviewer" | "candidate";
-  text: string;
-  delay?: number;
-}) {
-  const { ref, visible } = useReveal(0.05);
-  const isInterviewer = speaker === "interviewer";
+const TECH_ITEMS = [
+  { label: "GitHub", icon: "GH" },
+  { label: "LinkedIn", icon: "LI" },
+  { label: "Cartesia", icon: "CA" },
+  { label: "OpenAI", icon: "OA" },
+  { label: "Google", icon: "GO" },
+  { label: "Notion", icon: "NO" },
+  { label: "Next.js", icon: "NX" },
+  { label: "TypeScript", icon: "TS" },
+  { label: "Vercel", icon: "VL" },
+  { label: "Prisma", icon: "PR" },
+  { label: "Tailwind", icon: "TW" },
+  { label: "Python", icon: "PY" },
+];
+
+function MarqueeItem({ label, icon }: { label: string; icon: string }) {
   return (
     <div
-      ref={ref}
-      className={`flex items-start gap-3 ${isInterviewer ? "" : "flex-row-reverse"}`}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateX(0)" : `translateX(${isInterviewer ? -20 : 20}px)`,
-        transition: `opacity 0.5s ease ${delay}ms, transform 0.5s ease ${delay}ms`,
-      }}
+      className="flex items-center gap-2.5 px-5 py-2.5 mx-3 rounded-xl border border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04] transition-all cursor-default"
+      style={{ minWidth: 130 }}
     >
-      <div
-        className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold border ${
-          isInterviewer
-            ? "bg-indigo-950 border-indigo-700 text-indigo-300"
-            : "bg-slate-800 border-slate-600 text-slate-300"
-        }`}
+      <span
+        className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-indigo-300 shrink-0"
+        style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)" }}
       >
-        {isInterviewer ? "M" : "Y"}
+        {icon}
+      </span>
+      <span className="text-[13px] font-medium text-slate-400 whitespace-nowrap">{label}</span>
+    </div>
+  );
+}
+
+function MarqueeSection() {
+  const items = [...TECH_ITEMS, ...TECH_ITEMS];
+  return (
+    <div className="relative py-16 overflow-hidden" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+      {/* Fade masks */}
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-32 z-10" style={{ background: "linear-gradient(to right, #06070d 0%, transparent 100%)" }} />
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-32 z-10" style={{ background: "linear-gradient(to left, #06070d 0%, transparent 100%)" }} />
+
+      <div className="text-center mb-8">
+        <SectionLabel>Ecosystem &amp; Integrations</SectionLabel>
       </div>
-      <div
-        className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed ${
-          isInterviewer
-            ? "bg-indigo-950/60 border border-indigo-800/40 text-slate-200 rounded-tl-sm"
-            : "bg-slate-800/70 border border-slate-700/40 text-slate-300 rounded-tr-sm"
-        }`}
-      >
-        {text}
+
+      <div className="overflow-hidden space-y-3">
+        {/* Row 1 — left */}
+        <div className="overflow-hidden">
+          <div className="marquee-track-left">
+            {items.map((item, i) => <MarqueeItem key={`l1-${i}`} {...item} />)}
+          </div>
+        </div>
+        {/* Row 2 — right */}
+        <div className="overflow-hidden">
+          <div className="marquee-track-right">
+            {[...items].reverse().map((item, i) => <MarqueeItem key={`r2-${i}`} {...item} />)}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── Main landing page ────────────────────────────────────────────────────────
-export default function LandingPage() {
-  const [persona, setPersona] = useState<"marcus" | "elena">("marcus");
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [voiceError, setVoiceError] = useState<string | null>(null);
+// ─────────────────────────────────────────────────────────────────────────────
+// PROBLEM SECTION — "The old way vs Veyra"
+// ─────────────────────────────────────────────────────────────────────────────
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const audioSrcRef = useRef<AudioBufferSourceNode | null>(null);
+function ProblemSection() {
+  const { ref, style } = useSectionReveal();
+  return (
+    <section ref={ref} style={style} className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+      <div className="text-center mb-16 space-y-4">
+        <SectionLabel>The problem</SectionLabel>
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-2xl mx-auto">
+          Most interview practice doesn&apos;t behave<br className="hidden sm:inline" /> like an interview.
+        </h2>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+        {/* Old way */}
+        <div
+          className="rounded-2xl p-7 space-y-5"
+          style={{ background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.12)" }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-500 opacity-60" />
+            <span className="text-[11px] font-bold uppercase tracking-widest text-rose-400">The old way</span>
+          </div>
+          <div className="space-y-2">
+            {[
+              "Question 1 is asked",
+              "You answer",
+              "Question 2 is asked (unrelated)",
+              "You answer",
+              "Question 3 is asked (still unrelated)",
+              "Session ends. Generic feedback.",
+            ].map((step, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="flex flex-col items-center shrink-0 pt-1">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-rose-400" style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.2)" }}>{i + 1}</div>
+                  {i < 5 && <div className="w-px h-5 bg-rose-500/20 mt-1" />}
+                </div>
+                <p className="text-[13px] text-slate-400 pt-0.5 leading-snug">{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
-  const stopAudio = useCallback(() => {
-    try {
-      audioSrcRef.current?.stop();
-    } catch {}
-    audioSrcRef.current = null;
+        {/* Veyra way */}
+        <div
+          className="rounded-2xl p-7 space-y-5"
+          style={{ background: "rgba(99,102,241,0.05)", border: "1px solid rgba(99,102,241,0.18)" }}
+        >
+          <div className="flex items-center gap-2">
+            <GlowDot />
+            <span className="text-[11px] font-bold uppercase tracking-widest text-indigo-400">Veyra</span>
+          </div>
+          <div className="space-y-2">
+            {[
+              { step: "Question asked based on your resume", branch: false },
+              { step: "You answer", branch: false },
+              { step: "Veyra analyzes: what was claimed?", branch: true },
+              { step: "Finds a weak point — asks follow-up", branch: true },
+              { step: "You elaborate — Veyra finds a gap", branch: true },
+              { step: "Challenges reasoning from first principles", branch: true },
+              { step: "Evidence-backed evaluation generated", branch: false },
+            ].map(({ step, branch }, i, arr) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="flex flex-col items-center shrink-0 pt-1">
+                  <div
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold"
+                    style={{
+                      background: branch ? "rgba(99,102,241,0.15)" : "rgba(99,102,241,0.08)",
+                      border: `1px solid rgba(99,102,241,${branch ? 0.4 : 0.2})`,
+                      color: branch ? "#a5b4fc" : "#6366f1",
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                  {i < arr.length - 1 && (
+                    <div className="w-px mt-1" style={{ height: 20, background: branch ? "rgba(99,102,241,0.3)" : "rgba(99,102,241,0.1)" }} />
+                  )}
+                </div>
+                <p className="text-[13px] pt-0.5 leading-snug" style={{ color: branch ? "#c7d2fe" : "#94a3b8" }}>{step}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADAPTIVE CONVERSATION DEMO
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CONVO_NODES = [
+  { from: "interviewer", text: "Tell me about a system you built at scale." },
+  { from: "candidate", text: "I built a RAG pipeline serving 50k daily requests." },
+  { from: "interviewer", text: "Why RAG over fine-tuning for that use case?" },
+  { from: "candidate", text: "We needed dynamic knowledge without retraining costs." },
+  { from: "interviewer", text: "How did you handle retrieval failures in production?" },
+  { from: "candidate", text: "We had a fallback to keyword search and a circuit breaker." },
+  { from: "interviewer", text: "What happened when retrieved context was irrelevant to the query?" },
+];
+
+function AdaptiveSection() {
+  const { ref, style } = useSectionReveal();
+  const [activeIdx, setActiveIdx] = useState(2);
+
+  useEffect(() => {
+    const t = setInterval(() => setActiveIdx(i => (i < CONVO_NODES.length - 1 ? i + 1 : 2)), 2200);
+    return () => clearInterval(t);
   }, []);
 
-  const handlePersona = (p: "marcus" | "elena") => {
-    if (isSpeaking) {
-      stopAudio();
-      setIsSpeaking(false);
-    }
-    setPersona(p);
-    setVoiceError(null);
-  };
+  return (
+    <section ref={ref} style={style} className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        {/* Conversation panel */}
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{ background: "rgba(10,11,18,0.95)", border: "1px solid rgba(99,102,241,0.15)", boxShadow: "0 32px 80px rgba(0,0,0,0.6)" }}
+        >
+          <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/5">
+            <GlowDot />
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Live interview — Adaptive AI</span>
+          </div>
+          <div className="p-5 space-y-3 min-h-[360px]">
+            {CONVO_NODES.slice(0, activeIdx + 1).map((node, i) => (
+              <div key={i} className={`flex gap-3 ${node.from === "candidate" ? "flex-row-reverse" : ""}`}
+                style={{ opacity: i === activeIdx ? 1 : 0.55, transition: "opacity 0.4s ease" }}
+              >
+                <div
+                  className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[9px] font-bold"
+                  style={node.from === "interviewer"
+                    ? { background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "#a5b4fc" }
+                    : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#94a3b8" }
+                  }
+                >
+                  {node.from === "interviewer" ? "M" : "Y"}
+                </div>
+                <div
+                  className="max-w-[78%] px-3.5 py-2 rounded-xl text-[12px] leading-relaxed"
+                  style={node.from === "interviewer"
+                    ? { background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.15)", color: "#e2e8f0", borderTopLeftRadius: 4 }
+                    : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "#94a3b8", borderTopRightRadius: 4 }
+                  }
+                >
+                  {node.text}
+                </div>
+              </div>
+            ))}
+            {/* Typing indicator */}
+            <div className="flex items-center gap-1.5 pl-9">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="w-1.5 h-1.5 rounded-full bg-indigo-500" style={{ animation: `wave-bar 1s ease-in-out ${i * 0.2}s infinite`, opacity: 0.6 }} />
+              ))}
+            </div>
+          </div>
+        </div>
 
-  const handleVoicePreview = async () => {
-    if (isSpeaking) {
-      stopAudio();
-      setIsSpeaking(false);
+        {/* Text side */}
+        <div className="space-y-6">
+          <SectionLabel>Adaptive intelligence</SectionLabel>
+          <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-white tracking-tight leading-tight">
+            Every question follows from<br className="hidden lg:inline" /> your last answer.
+          </h2>
+          <p className="text-[15px] text-slate-400 leading-relaxed max-w-md">
+            Veyra listens to what you say, extracts claims, identifies weak points, and decides what to probe next. No scripts. No canned transitions.
+          </p>
+          <div className="space-y-3 text-[13px] text-slate-300">
+            {[
+              "Claim extracted — depth probe generated",
+              "Ownership verified across three-turn progression",
+              "Contradiction detected — revisited later in session",
+              "First-principles pivot when answers stay vague",
+            ].map(t => (
+              <div key={t} className="flex items-start gap-2.5">
+                <svg className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="7" stroke="#34d399" strokeWidth="1" />
+                  <path d="M5 8.25l2 2 4-4.5" stroke="#34d399" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {t}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REALTIME VOICE SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+function VoiceSection({ persona, onPersonaChange }: { persona: "marcus" | "elena"; onPersonaChange: (p: "marcus" | "elena") => void }) {
+  const { ref, style } = useSectionReveal();
+  const [speaking, setSpeaking] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const srcRef = useRef<AudioBufferSourceNode | null>(null);
+
+  const handleListen = useCallback(async () => {
+    if (speaking) {
+      try { srcRef.current?.stop(); } catch {}
+      srcRef.current = null;
+      setSpeaking(false);
       return;
     }
-    setVoiceError(null);
-
-    const phrase =
+    setLoading(true);
+    setError(null);
+    const text =
       persona === "marcus"
-        ? "Tell me about the most challenging distributed system you've designed. I want to understand your architectural decisions and the trade-offs you made."
-        : "Walk me through a time you identified a critical performance bottleneck. What was your diagnostic process, and how did you measure the improvement?";
-
-    setIsSpeaking(true);
-
+        ? "Tell me about the most challenging distributed system you've designed. I want to understand the trade-offs you made."
+        : "Walk me through a critical performance bottleneck you identified. What was your diagnostic process?";
     try {
-      const AudioCtx =
-        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new AudioCtx({ sampleRate: 44100 });
-      }
-      if (audioCtxRef.current.state === "suspended") {
-        await audioCtxRef.current.resume();
-      }
-
-      const res = await fetch("/api/cartesia/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: phrase,
-          gender: persona === "marcus" ? "male" : "female",
-          isPreview: true,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Voice synthesis failed");
-      }
-
-      const reader = res.body?.getReader();
-      if (!reader) throw new Error("No stream");
-
-      const decoder = new TextDecoder();
-      let buf = "";
-      const chunks: Uint8Array[] = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        const lines = buf.split("\n");
-        buf = lines.pop() ?? "";
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith("data:")) continue;
-          const jsonStr = trimmed.slice(5).trim();
-          if (!jsonStr || jsonStr === "[DONE]") continue;
-          try {
-            const ev = JSON.parse(jsonStr);
-            if (ev.data) {
-              const bin = atob(ev.data);
-              const b = new Uint8Array(bin.length);
-              for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
-              chunks.push(b);
-            }
-          } catch {}
-        }
-      }
-
-      if (chunks.length > 0) {
-        const total = chunks.reduce((a, c) => a + c.length, 0);
-        const combined = new Uint8Array(total);
-        let off = 0;
-        for (const c of chunks) {
-          combined.set(c, off);
-          off += c.length;
-        }
-
-        const f32 = new Float32Array(
-          combined.buffer,
-          0,
-          Math.floor(combined.byteLength / 4)
-        );
-        const audioBuf = audioCtxRef.current.createBuffer(
-          1,
-          f32.length,
-          44100
-        );
-        audioBuf.getChannelData(0).set(f32);
-
-        const src = audioCtxRef.current.createBufferSource();
-        src.buffer = audioBuf;
-        src.connect(audioCtxRef.current.destination);
-        audioSrcRef.current = src;
-
-        src.onended = () => {
-          setIsSpeaking(false);
-          audioSrcRef.current = null;
-        };
-
-        src.start(0);
-      } else {
-        setIsSpeaking(false);
+      const src = await playCartesiaVoice(persona === "marcus" ? "male" : "female", text);
+      srcRef.current = src;
+      if (src) {
+        setSpeaking(true);
+        src.onended = () => { setSpeaking(false); srcRef.current = null; };
       }
     } catch {
-      setIsSpeaking(false);
-      setVoiceError("Voice preview unavailable. Check Cartesia configuration.");
+      setError("Voice preview unavailable. Check server configuration.");
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [speaking, persona]);
 
-  const isMarcus = persona === "marcus";
-  const photoSrc = isMarcus
-    ? "/avatars/interviewer_male.jpg"
-    : "/avatars/interviewer_female.jpg";
-  const interviewerName = isMarcus ? "Marcus Vance" : "Elena Rostova";
-  const interviewerTitle = isMarcus
-    ? "Senior Engineering Director"
-    : "Principal Technical Architect";
+  useEffect(() => {
+    return () => { try { srcRef.current?.stop(); } catch {} };
+  }, []);
 
   return (
-    <div className="flex flex-col w-full overflow-x-hidden" style={{ background: "#080910" }}>
-
-      {/* ── HERO ──────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[100svh] flex items-center px-5 sm:px-8 lg:px-12 pt-24 pb-20">
-        {/* Ambient glows */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 overflow-hidden"
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: "10%",
-              left: "5%",
-              width: 560,
-              height: 560,
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)",
-              filter: "blur(40px)",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              top: "40%",
-              right: "0%",
-              width: 480,
-              height: 480,
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)",
-              filter: "blur(40px)",
-            }}
-          />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center">
-          {/* Left column */}
-          <div className="flex flex-col gap-8">
-            {/* Eyebrow */}
-            <div className="flex flex-wrap gap-2">
-              <Pill>Powered by Cartesia Sonic-3.6</Pill>
-              <Pill>Ink-2 Real-Time STT</Pill>
-            </div>
-
-            {/* Headline */}
-            <h1
-              className="font-extrabold tracking-tight text-white leading-[1.05]"
-              style={{ fontSize: "clamp(44px, 6.5vw, 88px)" }}
-            >
-              The interview that
-              <br />
-              <span
-                style={{
-                  background:
-                    "linear-gradient(110deg, #a5b4fc 0%, #818cf8 40%, #c4b5fd 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                actually prepares you.
-              </span>
-            </h1>
-
-            {/* Sub-headline */}
-            <p
-              className="text-slate-400 leading-relaxed max-w-xl"
-              style={{ fontSize: "clamp(15px, 1.5vw, 18px)" }}
-            >
-              A human interviewer voice, adaptive intelligence, and real-time
-              memory of everything you say. No canned questions. No canned
-              scores. Every follow-up is earned by your last answer.
-            </p>
-
-            {/* Persona toggle */}
-            <div className="flex flex-col gap-3">
-              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">
-                Choose your interviewer
-              </p>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  data-testid="persona-marcus"
-                  onClick={() => handlePersona("marcus")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all text-left ${
-                    isMarcus
-                      ? "bg-indigo-950/70 border-indigo-600/70 text-white"
-                      : "bg-slate-900/50 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-200"
-                  }`}
-                >
-                  <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-700">
-                    <Image
-                      src="/avatars/interviewer_male.jpg"
-                      alt="Marcus Vance"
-                      width={36}
-                      height={36}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-bold leading-tight">Marcus Vance</p>
-                    <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
-                      Engineering Director
-                    </p>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  data-testid="persona-elena"
-                  onClick={() => handlePersona("elena")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all text-left ${
-                    !isMarcus
-                      ? "bg-indigo-950/70 border-indigo-600/70 text-white"
-                      : "bg-slate-900/50 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-200"
-                  }`}
-                >
-                  <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-700">
-                    <Image
-                      src="/avatars/interviewer_female.jpg"
-                      alt="Elena Rostova"
-                      width={36}
-                      height={36}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-bold leading-tight">Elena Rostova</p>
-                    <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
-                      Principal Architect
-                    </p>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {/* CTA row */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/interviews/new"
-                data-testid="cta-start-interview"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm text-white transition-all"
-                style={{
-                  background: "linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%)",
-                  boxShadow: "0 0 32px rgba(99,102,241,0.3)",
-                }}
-              >
-                Start an Interview
-                <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-
-              <button
-                type="button"
-                data-testid="voice-preview-btn"
-                onClick={handleVoicePreview}
-                className={`inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm border transition-all ${
-                  isSpeaking
-                    ? "bg-indigo-950/40 border-indigo-700 text-indigo-200"
-                    : "bg-slate-900/60 border-slate-700 text-slate-200 hover:border-slate-500"
-                }`}
-              >
-                <Waveform active={isSpeaking} />
-                <span>{isSpeaking ? "Stop preview" : "Hear the interviewer"}</span>
-              </button>
-            </div>
-
-            {voiceError && (
-              <p className="text-[11px] text-rose-400">{voiceError}</p>
-            )}
-          </div>
-
-          {/* Right column — interviewer photo */}
-          <div className="relative flex justify-center lg:justify-end">
-            {/* Decorative ring */}
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 flex items-center justify-center pointer-events-none"
-            >
-              <div
-                style={{
-                  width: "95%",
-                  height: "95%",
-                  borderRadius: "50%",
-                  border: "1px solid rgba(99,102,241,0.15)",
-                  position: "absolute",
-                }}
-              />
-              <div
-                style={{
-                  width: "80%",
-                  height: "80%",
-                  borderRadius: "50%",
-                  border: "1px solid rgba(99,102,241,0.08)",
-                  position: "absolute",
-                }}
-              />
-            </div>
-
-            <div
-              className="relative"
-              style={{ width: "min(440px, 90vw)", aspectRatio: "3/4" }}
-            >
-              {/* Photo frame */}
-              <div
-                className="relative w-full h-full rounded-[28px] overflow-hidden"
-                style={{
-                  border: "1px solid rgba(99,102,241,0.2)",
-                  boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(99,102,241,0.08)",
-                }}
-              >
-                <Image
-                  src={photoSrc}
-                  alt={interviewerName}
-                  fill
-                  className="object-cover object-top"
-                  priority
-                  sizes="(max-width: 768px) 90vw, 440px"
-                />
-                {/* Bottom gradient */}
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: "45%",
-                    background:
-                      "linear-gradient(to top, rgba(8,9,16,0.95) 0%, rgba(8,9,16,0.5) 60%, transparent 100%)",
-                  }}
-                />
-                {/* Name badge */}
-                <div className="absolute bottom-5 left-5 right-5">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-2 h-2 rounded-full"
-                      style={{
-                        background: isSpeaking ? "#34d399" : "#818cf8",
-                        boxShadow: isSpeaking
-                          ? "0 0 8px #34d399"
-                          : "0 0 8px #818cf8",
-                      }}
-                    />
-                    <div>
-                      <p className="text-sm font-bold text-white leading-tight">
-                        {interviewerName}
-                      </p>
-                      <p className="text-[11px] text-slate-400 leading-tight mt-0.5">
-                        {interviewerTitle}
-                      </p>
-                    </div>
-                    {isSpeaking && (
-                      <div className="ml-auto">
-                        <Waveform active={true} />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating status chip */}
-              <div
-                className="absolute -top-4 -right-4 px-3 py-1.5 rounded-xl border text-[11px] font-semibold"
-                style={{
-                  background: "rgba(8,9,16,0.9)",
-                  border: "1px solid rgba(99,102,241,0.3)",
-                  color: "#a5b4fc",
-                  backdropFilter: "blur(12px)",
-                }}
-              >
-                Real-time voice
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── ADAPTIVE CONVERSATION ─────────────────────────────────────── */}
-      <RevealSection
-        className="py-24 px-5 sm:px-8 lg:px-12"
-        style={{}}
-      >
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Conversation demo */}
-          <div
-            className="rounded-3xl p-6 space-y-4"
-            style={{
-              background: "rgba(15,16,26,0.8)",
-              border: "1px solid rgba(99,102,241,0.12)",
-              boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
-            }}
-          >
-            {/* Header */}
-            <div className="flex items-center gap-2 pb-4 border-b border-slate-800/80">
-              <div className="w-2 h-2 rounded-full bg-emerald-400" style={{ boxShadow: "0 0 6px #34d399" }} />
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
-                Live Interview — System Design
-              </span>
-            </div>
-
-            <Bubble speaker="interviewer" text="You mentioned you used Redis caching to reduce p99 latency. What specifically were you caching — objects, sessions, query results?" delay={0} />
-            <Bubble speaker="candidate" text="We cached the API responses for user profile lookups. The hit rate was around 85%." delay={80} />
-            <Bubble speaker="interviewer" text="What made a profile lookup cache-safe? User profiles can change — how did you handle invalidation when a user updated their settings?" delay={160} />
-            <Bubble speaker="candidate" text="We used write-through invalidation. Any PUT to the profile endpoint flushed the key synchronously." delay={240} />
-            <Bubble speaker="interviewer" text="Good. But what about race conditions between the flush and a concurrent read? Walk me through the exact sequence." delay={320} />
-
-            {/* Indicator */}
-            <div className="flex items-center gap-2 pt-2">
-              <div className="flex gap-1">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="w-1.5 h-1.5 rounded-full bg-indigo-500"
-                    style={{
-                      animation: `pulse 1.2s ease-in-out ${i * 0.3}s infinite`,
-                      opacity: 0.7,
-                    }}
-                  />
-                ))}
-              </div>
-              <span className="text-[10px] text-slate-500">Marcus is analyzing your answer...</span>
-            </div>
-          </div>
-
-          {/* Text */}
-          <div className="space-y-6">
-            <p className="text-[11px] font-semibold text-indigo-400 uppercase tracking-widest">
-              Adaptive conversation
-            </p>
-            <h2
-              className="font-extrabold text-white tracking-tight leading-tight"
-              style={{ fontSize: "clamp(32px, 3.5vw, 52px)" }}
-            >
-              Every follow-up is earned by your last answer.
-            </h2>
-            <p className="text-slate-400 leading-relaxed text-[15px]">
-              Veyra listens to every word and builds on it. If you mention a
-              cache hit rate, the next question probes invalidation. If you say
-              &ldquo;we used a load balancer,&rdquo; it asks what you personally
-              configured. No pre-written question banks. No scripts.
-            </p>
-            <ul className="space-y-3 text-[14px]">
-              {[
-                "Contextual follow-ups built from your exact wording",
-                "First-principles pivots when answers are vague",
-                "Interruption and turn-taking like a real conversation",
-                "Varied acknowledgements — not the same phrase twice",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2.5 text-slate-300">
-                  <Check />
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </RevealSection>
-
-      {/* ── MEMORY ────────────────────────────────────────────────────── */}
-      <RevealSection
-        className="py-24 px-5 sm:px-8 lg:px-12"
-        style={{ background: "rgba(15,16,26,0.5)" }}
-      >
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Text */}
-          <div className="space-y-6 order-2 lg:order-1">
-            <p className="text-[11px] font-semibold text-violet-400 uppercase tracking-widest">
-              Interview memory
-            </p>
-            <h2
-              className="font-extrabold text-white tracking-tight leading-tight"
-              style={{ fontSize: "clamp(32px, 3.5vw, 52px)" }}
-            >
-              It remembers what you said 25 minutes ago.
-            </h2>
-            <p className="text-slate-400 leading-relaxed text-[15px]">
-              Every claim you make is tracked across the full session. When you
-              say &ldquo;we reduced latency by 40%&rdquo; at minute 5, Marcus
-              will return to that at minute 25 — asking for the baseline, the
-              benchmark, and the production measurement. Ownership is verified
-              across three explicit probes.
-            </p>
-            <ul className="space-y-3 text-[14px]">
-              {[
-                "Full-session claim registry — no claim slips through",
-                "3-stage ownership probe: individual vs team contribution",
-                "Evidence-backed scorecard with verbatim transcript citations",
-                "Contradictions flagged and re-challenged at depth",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2.5 text-slate-300">
-                  <Check />
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Claim tracker visual */}
-          <div
-            className="rounded-3xl p-6 space-y-3 order-1 lg:order-2"
-            style={{
-              background: "rgba(15,16,26,0.8)",
-              border: "1px solid rgba(139,92,246,0.15)",
-              boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
-            }}
-          >
-            <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest pb-2 border-b border-slate-800/80">
-              Claim Tracker — Active Session
-            </p>
-            {[
-              { claim: '"Reduced p99 by 40%"', status: "PROBED", color: "#facc15" },
-              { claim: '"Led the migration to microservices"', status: "SUPPORTED", color: "#34d399" },
-              { claim: '"Owned the Kafka consumer group"', status: "UNRESOLVED", color: "#94a3b8" },
-              { claim: '"We used Kubernetes for orchestration"', status: "PROBED", color: "#facc15" },
-              { claim: '"Cut deployment time from 2h to 8min"', status: "SUPPORTED", color: "#34d399" },
-            ].map(({ claim, status, color }, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between gap-4 py-2.5 px-3 rounded-xl"
-                style={{ background: "rgba(99,102,241,0.05)", border: "1px solid rgba(99,102,241,0.08)" }}
-              >
-                <span className="text-[12px] text-slate-300 truncate">{claim}</span>
-                <span
-                  className="text-[10px] font-bold shrink-0 px-2 py-0.5 rounded-full"
-                  style={{
-                    color,
-                    background: `${color}18`,
-                    border: `1px solid ${color}30`,
-                  }}
-                >
-                  {status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </RevealSection>
-
-      {/* ── RESUME & JD ───────────────────────────────────────────────── */}
-      <RevealSection className="py-24 px-5 sm:px-8 lg:px-12" style={{}}>
-        <div className="max-w-7xl mx-auto space-y-14">
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-            <p className="text-[11px] font-semibold text-indigo-400 uppercase tracking-widest">
-              Resume intelligence
-            </p>
-            <h2
-              className="font-extrabold text-white tracking-tight"
-              style={{ fontSize: "clamp(32px, 3.5vw, 52px)" }}
-            >
-              Your resume becomes the interview.
-            </h2>
-            <p className="text-slate-400 text-[15px] leading-relaxed">
-              Every bullet point is a probe waiting to happen. Veyra extracts
-              your claims, maps them against the job description, and constructs
-              the exact questions a real interviewer would ask about your
-              specific background.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                label: "Resume Parsing",
-                desc: "Paste, upload, or sync a saved resume. Claims are extracted and tagged for depth probing.",
-                accent: "#818cf8",
-              },
-              {
-                label: "JD Gap Mapping",
-                desc: "The job description is compared against your resume. Questions target uncovered requirements first.",
-                accent: "#c4b5fd",
-              },
-              {
-                label: "Role Calibration",
-                desc: "Target role and seniority level adjusts the bar. Staff engineer questions differ from senior engineer questions.",
-                accent: "#a5f3fc",
-              },
-            ].map(({ label, desc, accent }) => (
-              <div
-                key={label}
-                className="p-6 rounded-2xl space-y-3"
-                style={{
-                  background: "rgba(15,16,26,0.8)",
-                  border: `1px solid ${accent}20`,
-                  boxShadow: `0 0 40px ${accent}08`,
-                }}
-              >
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={{ background: `${accent}18`, border: `1px solid ${accent}30` }}
-                >
-                  <div className="w-3 h-3 rounded-full" style={{ background: accent }} />
-                </div>
-                <h3 className="text-[15px] font-bold text-white">{label}</h3>
-                <p className="text-[13px] text-slate-400 leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </RevealSection>
-
-      {/* ── GITHUB DEFENSE ────────────────────────────────────────────── */}
-      <RevealSection
-        className="py-24 px-5 sm:px-8 lg:px-12"
-        style={{ background: "rgba(15,16,26,0.5)" }}
-      >
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Code block visual */}
-          <div
-            className="rounded-3xl overflow-hidden"
-            style={{
-              border: "1px solid rgba(99,102,241,0.15)",
-              boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
-            }}
-          >
-            {/* Title bar */}
-            <div
-              className="flex items-center gap-2 px-5 py-3"
-              style={{ background: "rgba(15,16,26,0.95)", borderBottom: "1px solid rgba(99,102,241,0.1)" }}
-            >
-              <div className="w-2.5 h-2.5 rounded-full bg-rose-500/70" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
-              <span className="ml-2 text-[11px] text-slate-500">consumer_group.py — GitHub Scan</span>
-            </div>
-
-            {/* Code */}
-            <div
-              className="p-5 font-mono text-[12px] leading-[1.7]"
-              style={{ background: "rgba(10,11,18,0.98)" }}
-            >
-              <div>
-                <span style={{ color: "#6272a4" }}># Line 47 — Kafka consumer group</span>
-              </div>
-              <div>
-                <span style={{ color: "#8be9fd" }}>consumer</span>
-                <span style={{ color: "#f8f8f2" }}> = KafkaConsumer(</span>
-              </div>
-              <div className="pl-4">
-                <span style={{ color: "#f1fa8c" }}>&quot;user-events&quot;</span>
-                <span style={{ color: "#f8f8f2" }}>,</span>
-              </div>
-              <div className="pl-4">
-                <span style={{ color: "#bd93f9" }}>group_id</span>
-                <span style={{ color: "#f8f8f2" }}>=</span>
-                <span style={{ color: "#f1fa8c" }}>&quot;analytics-consumers&quot;</span>
-              </div>
-              <div>
-                <span style={{ color: "#f8f8f2" }}>)</span>
-              </div>
-              <div className="mt-3 py-2 px-3 rounded-lg" style={{ background: "rgba(250,204,21,0.06)", border: "1px solid rgba(250,204,21,0.15)" }}>
-                <span style={{ color: "#facc15" }}>Marcus: </span>
-                <span style={{ color: "#94a3b8", fontSize: 11 }}>
-                  You set group_id here. What happens to offset commits if a consumer
-                  crashes mid-partition? Walk me through your error recovery.
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Text */}
-          <div className="space-y-6">
-            <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-widest">
-              GitHub project defense
-            </p>
-            <h2
-              className="font-extrabold text-white tracking-tight leading-tight"
-              style={{ fontSize: "clamp(32px, 3.5vw, 52px)" }}
-            >
-              Your code is read before the interview starts.
-            </h2>
-            <p className="text-slate-400 leading-relaxed text-[15px]">
-              Connect a GitHub repository or paste a URL and Veyra reads the
-              actual source code. Questions are generated from your real
-              implementation decisions — not generic patterns. Every
-              architectural choice becomes a line of questioning.
-            </p>
-            <ul className="space-y-3 text-[14px]">
-              {[
-                "Repository scan extracts real implementation patterns",
-                "Questions target your actual design decisions",
-                "Defensive probing on error handling and edge cases",
-                "10x traffic and failure scenario simulations",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2.5 text-slate-300">
-                  <Check />
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </RevealSection>
-
-      {/* ── INTERVIEW MODES ───────────────────────────────────────────── */}
-      <RevealSection className="py-24 px-5 sm:px-8 lg:px-12" style={{}}>
-        <div className="max-w-7xl mx-auto space-y-14">
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-            <p className="text-[11px] font-semibold text-indigo-400 uppercase tracking-widest">
-              Interview modes
-            </p>
-            <h2
-              className="font-extrabold text-white tracking-tight"
-              style={{ fontSize: "clamp(32px, 3.5vw, 52px)" }}
-            >
-              Every interview type, precisely calibrated.
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[
-              {
-                title: "Behavioral",
-                desc: "STAR method probed three levels deep. Ownership, impact, and lessons verified.",
-                accent: "#818cf8",
-              },
-              {
-                title: "System Design",
-                desc: "Whiteboard-style architectural sessions with scale, failure, and trade-off challenges.",
-                accent: "#c4b5fd",
-              },
-              {
-                title: "Technical Deep-Dive",
-                desc: "Language-specific algorithms, runtime complexity, and edge-case analysis.",
-                accent: "#34d399",
-              },
-              {
-                title: "Domain Expertise",
-                desc: "ML, distributed systems, security, and platform engineering — domain tuned.",
-                accent: "#f59e0b",
-              },
-            ].map(({ title, desc, accent }) => (
-              <div
-                key={title}
-                className="p-5 rounded-2xl space-y-3 group hover:scale-[1.02] transition-transform"
-                style={{
-                  background: "rgba(15,16,26,0.8)",
-                  border: `1px solid ${accent}18`,
-                }}
-              >
-                <div
-                  className="w-1 h-8 rounded-full"
-                  style={{ background: accent }}
-                />
-                <h3 className="text-[15px] font-bold text-white">{title}</h3>
-                <p className="text-[12px] text-slate-400 leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </RevealSection>
-
-      {/* ── TRAINING JOURNEY ──────────────────────────────────────────── */}
-      <RevealSection
-        className="py-24 px-5 sm:px-8 lg:px-12"
-        style={{ background: "rgba(15,16,26,0.5)" }}
-      >
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Text */}
-          <div className="space-y-6">
-            <p className="text-[11px] font-semibold text-amber-400 uppercase tracking-widest">
-              Post-interview training
-            </p>
-            <h2
-              className="font-extrabold text-white tracking-tight leading-tight"
-              style={{ fontSize: "clamp(32px, 3.5vw, 52px)" }}
-            >
-              A remediation plan built from your gaps.
-            </h2>
-            <p className="text-slate-400 leading-relaxed text-[15px]">
-              After each session, Veyra generates a 5-component training plan
-              targeting the exact areas where your answers were shallow or
-              contradictory. You get specific drills, not generic advice.
-            </p>
-          </div>
-
-          {/* Training steps */}
-          <div className="space-y-3">
-            {[
-              { step: "01", title: "Micro-lesson", desc: "Targeted explanation of the concept you missed." },
-              { step: "02", title: "Concept drill", desc: "Rapid-fire questions until fluency is demonstrated." },
-              { step: "03", title: "Applied exercises", desc: "Real implementation tasks using your tech stack." },
-              { step: "04", title: "System design challenge", desc: "A scaled architectural scenario around the gap." },
-              { step: "05", title: "Re-interview", desc: "Full session re-examining the previously failed area." },
-            ].map(({ step, title, desc }) => (
-              <div
-                key={step}
-                className="flex items-start gap-4 p-4 rounded-2xl"
-                style={{
-                  background: "rgba(15,16,26,0.8)",
-                  border: "1px solid rgba(99,102,241,0.1)",
-                }}
-              >
-                <span
-                  className="text-[10px] font-mono font-bold shrink-0 pt-0.5"
-                  style={{ color: "#818cf8" }}
-                >
-                  {step}
-                </span>
-                <div>
-                  <p className="text-[13px] font-bold text-white">{title}</p>
-                  <p className="text-[12px] text-slate-400 mt-0.5">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </RevealSection>
-
-      {/* ── COMPARISON ────────────────────────────────────────────────── */}
-      <RevealSection className="py-24 px-5 sm:px-8 lg:px-12" style={{}}>
-        <div className="max-w-5xl mx-auto space-y-12">
-          <div className="text-center space-y-3">
-            <h2
-              className="font-extrabold text-white tracking-tight"
-              style={{ fontSize: "clamp(28px, 3vw, 44px)" }}
-            >
-              Not another mock interview tool.
-            </h2>
-            <p className="text-slate-400 text-[14px]">
-              The difference is the conversation, not just the features list.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Other tools */}
-            <div
-              className="p-7 rounded-2xl space-y-5"
-              style={{
-                background: "rgba(15,16,26,0.6)",
-                border: "1px solid rgba(248,113,113,0.15)",
-              }}
-            >
-              <p className="text-[11px] font-bold text-rose-400 uppercase tracking-widest">
-                Traditional mock tools
-              </p>
-              <ul className="space-y-3 text-[13px] text-slate-400">
-                {[
-                  "Fixed question bank — same questions every session",
-                  'Fabricated scores like "You scored 73%" with no evidence',
-                  "Cartoon avatars or prerecorded video that cannot react",
-                  "No memory of what you said 10 minutes ago",
-                  "Generic tips: 'Use the STAR method'",
-                ].map((t) => (
-                  <li key={t} className="flex items-start gap-2.5">
-                    <Cross />
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Veyra */}
-            <div
-              className="p-7 rounded-2xl space-y-5"
-              style={{
-                background: "rgba(15,16,26,0.6)",
-                border: "1px solid rgba(99,102,241,0.2)",
-                boxShadow: "0 0 48px rgba(99,102,241,0.05)",
-              }}
-            >
-              <p className="text-[11px] font-bold text-indigo-400 uppercase tracking-widest">
-                The Veyra experience
-              </p>
-              <ul className="space-y-3 text-[13px] text-slate-200">
-                {[
-                  "Every follow-up built from your exact previous words",
-                  "Evidence-backed report citing verbatim transcript quotes",
-                  "Real human voice, real listening, real interruptions",
-                  "Full-session memory — claims verified 20 minutes later",
-                  "5-component training plan targeting your specific gaps",
-                ].map((t) => (
-                  <li key={t} className="flex items-start gap-2.5">
-                    <Check />
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </RevealSection>
-
-      {/* ── FINAL CTA ─────────────────────────────────────────────────── */}
-      <RevealSection className="py-28 px-5 sm:px-8 lg:px-12" style={{}}>
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          {/* Logo */}
-          <div className="flex justify-center">
-            <BrandLogo size={40} showWordmark={false} />
-          </div>
-
-          <h2
-            className="font-extrabold text-white tracking-tight leading-tight"
-            style={{ fontSize: "clamp(36px, 4.5vw, 64px)" }}
-          >
-            Ready to face an interview
-            <br />
-            <span
-              style={{
-                background: "linear-gradient(110deg, #a5b4fc 0%, #818cf8 40%, #c4b5fd 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              that doesn&apos;t go easy on you?
-            </span>
+    <section
+      ref={ref}
+      style={{ ...style, background: "rgba(10,11,18,0.6)", borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+      className="py-28 px-5 sm:px-8 lg:px-12"
+    >
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="space-y-6">
+          <SectionLabel>Realtime voice</SectionLabel>
+          <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-white tracking-tight leading-tight">
+            Not a chatbot.<br />A conversation.
           </h2>
-
-          <p className="text-slate-400 text-[15px] leading-relaxed max-w-xl mx-auto">
-            Create your account, choose Marcus or Elena, attach your resume,
-            and step into the room. The next follow-up question comes from what
-            you just said.
+          <p className="text-[15px] text-slate-400 leading-relaxed max-w-md">
+            Veyra uses Cartesia Sonic-3.6 for speech output and Ink-2 for real-time transcription. You hear a real human-quality voice. The system hears you instantly.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-[15px] text-white transition-all hover:scale-[1.03]"
+          {/* Persona selector */}
+          <div className="flex gap-3">
+            {(["marcus", "elena"] as const).map(p => (
+              <button
+                key={p}
+                type="button"
+                data-testid={`persona-${p}`}
+                onClick={() => onPersonaChange(p)}
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border transition-all text-left"
+                style={persona === p
+                  ? { background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.4)", color: "white" }
+                  : { background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", color: "#94a3b8" }
+                }
+              >
+                <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10">
+                  <Image
+                    src={p === "marcus" ? "/avatars/interviewer_male.jpg" : "/avatars/interviewer_female.jpg"}
+                    alt={p === "marcus" ? "Marcus" : "Elena"}
+                    width={32} height={32}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <p className="text-[12px] font-bold leading-tight">{p === "marcus" ? "Marcus Vance" : "Elena Rostova"}</p>
+                  <p className="text-[10px] opacity-50 leading-tight mt-0.5">{p === "marcus" ? "Engineering Director" : "Principal Architect"}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              data-testid="voice-preview-btn"
+              onClick={handleListen}
+              disabled={loading}
+              className="inline-flex items-center gap-3 px-6 py-3.5 rounded-xl font-semibold text-[14px] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 w-fit"
               style={{
-                background: "linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%)",
-                boxShadow: "0 0 40px rgba(99,102,241,0.35)",
+                background: speaking
+                  ? "rgba(99,102,241,0.15)"
+                  : "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+                boxShadow: speaking ? "none" : "0 0 0 1px rgba(99,102,241,0.3), 0 8px 32px rgba(99,102,241,0.25)",
+                border: speaking ? "1px solid rgba(99,102,241,0.4)" : "none",
+                color: "white",
               }}
             >
-              Create your account
-              <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-[15px] text-slate-300 border border-slate-700 hover:border-slate-500 hover:text-white transition-all"
-            >
-              Sign in
-            </Link>
+              <WaveformBars active={speaking} />
+              <span>{loading ? "Loading voice..." : speaking ? "Stop preview" : "Hear Veyra speak"}</span>
+            </button>
+            {error && <p className="text-[11px] text-rose-400">{error}</p>}
           </div>
         </div>
-      </RevealSection>
 
-      {/* Pulse keyframe — tiny inline style for the typing indicator */}
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          * { animation: none !important; transition-duration: 0ms !important; }
-        }
-      `}</style>
+        {/* Interviewer panel */}
+        <div className="relative flex justify-center">
+          <div
+            className="relative rounded-2xl overflow-hidden"
+            style={{
+              width: "min(420px, 92vw)",
+              aspectRatio: "4/5",
+              border: "1px solid rgba(99,102,241,0.2)",
+              boxShadow: "0 40px 100px rgba(0,0,0,0.7)",
+            }}
+          >
+            <Image
+              src={persona === "marcus" ? "/avatars/interviewer_male.jpg" : "/avatars/interviewer_female.jpg"}
+              alt={persona === "marcus" ? "Marcus Vance" : "Elena Rostova"}
+              fill
+              className="object-cover object-top transition-opacity duration-500"
+              sizes="420px"
+              priority
+            />
+            {/* Overlay gradient */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(6,7,13,0.95) 0%, rgba(6,7,13,0.3) 50%, transparent 100%)" }} />
+
+            {/* Status bar */}
+            <div className="absolute bottom-5 left-5 right-5">
+              <div
+                className="rounded-xl px-4 py-3 flex items-center gap-3"
+                style={{ background: "rgba(6,7,13,0.85)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(16px)" }}
+              >
+                <div
+                  className="w-2 h-2 rounded-full shrink-0 transition-all duration-300"
+                  style={speaking
+                    ? { background: "#34d399", boxShadow: "0 0 8px #34d399" }
+                    : { background: "#6366f1", boxShadow: "0 0 6px #6366f1" }
+                  }
+                />
+                <div className="flex-1">
+                  <p className="text-[13px] font-semibold text-white leading-tight">
+                    {persona === "marcus" ? "Marcus Vance" : "Elena Rostova"}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    {speaking ? "Speaking..." : persona === "marcus" ? "Senior Engineering Director" : "Principal Technical Architect"}
+                  </p>
+                </div>
+                {speaking && <WaveformBars active={true} bars={7} />}
+              </div>
+            </div>
+          </div>
+
+          {/* Floating chip */}
+          <div
+            className="absolute -top-3 -right-3 px-3 py-1.5 rounded-xl text-[11px] font-semibold"
+            style={{
+              background: "rgba(6,7,13,0.9)",
+              border: "1px solid rgba(99,102,241,0.3)",
+              color: "#a5b4fc",
+              backdropFilter: "blur(12px)",
+            }}
+          >
+            Cartesia Sonic-3.6
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RESUME → INTELLIGENCE SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ResumeSection() {
+  const { ref, style } = useSectionReveal();
+  const steps = [
+    { label: "Resume", desc: "Upload, paste, or sync a saved resume" },
+    { label: "Candidate Intelligence", desc: "Claims, roles, and technical signals extracted" },
+    { label: "Experience Map", desc: "Timeline, ownership levels, and tech stack" },
+    { label: "Claim Registry", desc: "Every claimable fact tracked for verification" },
+    { label: "Follow-up Strategy", desc: "Probing questions built from your specific background" },
+    { label: "Personalized Interview", desc: "Questions you can't answer with generic prep" },
+  ];
+
+  return (
+    <section ref={ref} style={style} className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+        <div className="space-y-6">
+          <SectionLabel>Resume intelligence</SectionLabel>
+          <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-white tracking-tight leading-tight">
+            Your resume becomes<br className="hidden lg:inline" /> the interview.
+          </h2>
+          <p className="text-[15px] text-slate-400 leading-relaxed max-w-md">
+            Every bullet point is a probe waiting to happen. Veyra extracts claims, maps them against the job description, and builds questions a real interviewer would ask about your background.
+          </p>
+          <div className="flex flex-wrap gap-2 pt-2">
+            {["Resume parsing", "JD gap mapping", "Role calibration", "Seniority tuning"].map(tag => (
+              <span key={tag} className="px-3 py-1 rounded-full text-[11px] font-medium text-indigo-300" style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)" }}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Flow diagram */}
+        <div className="space-y-2">
+          {steps.map((step, i) => (
+            <div key={i} className="flex items-start gap-4">
+              <div className="flex flex-col items-center shrink-0">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold"
+                  style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.25)", color: "#a5b4fc" }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                {i < steps.length - 1 && (
+                  <div className="w-px flex-1 mt-1 mb-1" style={{ background: "rgba(99,102,241,0.15)", minHeight: 20 }} />
+                )}
+              </div>
+              <div
+                className="flex-1 px-4 py-3 rounded-xl mb-2"
+                style={{ background: "rgba(99,102,241,0.04)", border: "1px solid rgba(99,102,241,0.08)" }}
+              >
+                <p className="text-[13px] font-semibold text-white">{step.label}</p>
+                <p className="text-[12px] text-slate-500 mt-0.5">{step.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GITHUB / PROJECT DEFENSE SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+function GitHubSection() {
+  const { ref, style } = useSectionReveal();
+  return (
+    <section
+      ref={ref}
+      style={{ ...style, background: "rgba(10,11,18,0.6)", borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+      className="py-28 px-5 sm:px-8 lg:px-12"
+    >
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        {/* Code panel */}
+        <div
+          className="rounded-2xl overflow-hidden order-2 lg:order-1"
+          style={{ background: "rgba(8,9,16,0.98)", border: "1px solid rgba(99,102,241,0.15)", boxShadow: "0 32px 80px rgba(0,0,0,0.7)" }}
+        >
+          {/* Title bar */}
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-white/5">
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-500/70" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
+              <div className="w-3 h-3 rounded-full bg-emerald-500/70" />
+            </div>
+            <span className="ml-2 text-[11px] text-slate-500 font-mono">consumer_group.py — Project scan</span>
+          </div>
+
+          <div className="p-5 font-mono text-[12px] leading-[1.8]" style={{ color: "#cdd6f4" }}>
+            <div><span style={{ color: "#6272a4" }}># Your Kafka consumer implementation</span></div>
+            <div><span style={{ color: "#8be9fd" }}>consumer</span><span> = KafkaConsumer(</span></div>
+            <div className="pl-5"><span style={{ color: "#f1fa8c" }}>&quot;user-events&quot;</span><span>,</span></div>
+            <div className="pl-5"><span style={{ color: "#bd93f9" }}>group_id</span><span>=</span><span style={{ color: "#f1fa8c" }}>&quot;analytics-consumers&quot;</span><span>,</span></div>
+            <div className="pl-5"><span style={{ color: "#bd93f9" }}>auto_offset_reset</span><span>=</span><span style={{ color: "#f1fa8c" }}>&quot;earliest&quot;</span></div>
+            <div><span>)</span></div>
+            <div className="mt-4 px-4 py-3 rounded-xl" style={{ background: "rgba(250,204,21,0.06)", border: "1px solid rgba(250,204,21,0.15)" }}>
+              <p style={{ color: "#fbbf24", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Marcus</p>
+              <p style={{ color: "#94a3b8", fontSize: 11, lineHeight: 1.6 }}>
+                You set <span style={{ color: "#a5b4fc" }}>auto_offset_reset=&quot;earliest&quot;</span> here. What happens to offset commits if a consumer crashes mid-partition? Walk me through your recovery handling.
+              </p>
+            </div>
+            <div className="mt-3 px-4 py-3 rounded-xl" style={{ background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.12)" }}>
+              <p style={{ color: "#6366f1", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Next probe</p>
+              <p style={{ color: "#64748b", fontSize: 11, lineHeight: 1.6 }}>
+                &quot;Why did you choose Kafka here instead of a simple queue like SQS?&quot;
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Text */}
+        <div className="space-y-6 order-1 lg:order-2">
+          <SectionLabel>Project defense</SectionLabel>
+          <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-white tracking-tight leading-tight">
+            Don&apos;t just explain it.<br />Defend it.
+          </h2>
+          <p className="text-[15px] text-slate-400 leading-relaxed max-w-md">
+            Connect a GitHub repository or paste a URL. Veyra reads your actual source code and generates questions from your real implementation decisions — not patterns from a textbook.
+          </p>
+          <div className="space-y-3 text-[13px] text-slate-300">
+            {[
+              "Repository scan reads architecture and framework choices",
+              "Questions target your actual design decisions",
+              "Error handling and edge-case probing from real code",
+              "10x traffic and failure scenario challenges",
+            ].map(t => (
+              <div key={t} className="flex items-start gap-2.5">
+                <svg className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="7" stroke="#34d399" strokeWidth="1" />
+                  <path d="M5 8.25l2 2 4-4.5" stroke="#34d399" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {t}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INTERVIEW TYPES — BENTO GRID
+// ─────────────────────────────────────────────────────────────────────────────
+
+const INTERVIEW_TYPES = [
+  {
+    title: "Technical Interview",
+    desc: "Deep-dive into algorithms, data structures, system internals, and runtime complexity.",
+    size: "lg",
+    accent: "#6366f1",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="currentColor" strokeWidth="1.5">
+        <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    title: "Coding",
+    desc: "Live coding with execution, time complexity, and edge-case analysis.",
+    size: "sm",
+    accent: "#10b981",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="currentColor" strokeWidth="1.5">
+        <path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    title: "System Design",
+    desc: "Whiteboard-style architectural sessions at scale.",
+    size: "sm",
+    accent: "#8b5cf6",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="currentColor" strokeWidth="1.5">
+        <circle cx="12" cy="12" r="3" /><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    title: "Project Defense",
+    desc: "Live interrogation of your GitHub repositories and architectural choices.",
+    size: "sm",
+    accent: "#f59e0b",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="currentColor" strokeWidth="1.5">
+        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    title: "Behavioral",
+    desc: "STAR-method probing three levels deep. Ownership and impact verified.",
+    size: "sm",
+    accent: "#06b6d4",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="currentColor" strokeWidth="1.5">
+        <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    title: "AI / ML Interview",
+    desc: "Domain-specific questioning on models, training, inference, and evaluation.",
+    size: "lg",
+    accent: "#ec4899",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="currentColor" strokeWidth="1.5">
+        <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+];
+
+function BentoSection() {
+  const { ref, style } = useSectionReveal();
+  return (
+    <section ref={ref} style={style} className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+      <div className="text-center mb-14 space-y-4">
+        <SectionLabel>Interview types</SectionLabel>
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+          Every type. Precisely calibrated.
+        </h2>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {INTERVIEW_TYPES.map(({ title, desc, size, accent, icon }) => (
+          <div
+            key={title}
+            className={`tilt-card rounded-2xl p-6 space-y-4 ${size === "lg" ? "lg:col-span-1" : ""}`}
+            style={{
+              background: "rgba(10,11,18,0.8)",
+              border: `1px solid ${accent}18`,
+              boxShadow: `0 0 60px ${accent}06`,
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: `${accent}14`, border: `1px solid ${accent}28`, color: accent }}
+            >
+              {icon}
+            </div>
+            <div>
+              <h3 className="text-[15px] font-bold text-white">{title}</h3>
+              <p className="text-[12px] text-slate-400 leading-relaxed mt-1.5">{desc}</p>
+            </div>
+            <div className="w-6 h-0.5 rounded-full" style={{ background: accent, opacity: 0.5 }} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MEMORY SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+function MemorySection() {
+  const { ref, style } = useSectionReveal();
+  const timeline = [
+    { min: "02:14", text: "I optimized the retrieval pipeline with semantic caching.", type: "claim" },
+    { min: "07:53", text: "Veyra: You mentioned a 40% latency reduction. What was the baseline p99?", type: "probe" },
+    { min: "15:31", text: "We used Redis for the cache layer.", type: "claim" },
+    { min: "24:07", text: "Veyra: Earlier you said you optimized retrieval — what actually changed after that optimization?", type: "followup" },
+  ];
+
+  return (
+    <section
+      ref={ref}
+      style={{ ...style, background: "rgba(10,11,18,0.6)", borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+      className="py-28 px-5 sm:px-8 lg:px-12"
+    >
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        {/* Timeline visual */}
+        <div
+          className="rounded-2xl p-6 space-y-4"
+          style={{ background: "rgba(8,9,16,0.95)", border: "1px solid rgba(139,92,246,0.15)", boxShadow: "0 32px 80px rgba(0,0,0,0.6)" }}
+        >
+          <div className="flex items-center gap-2 pb-3 border-b border-white/5">
+            <span className="w-2 h-2 rounded-full bg-violet-500" style={{ boxShadow: "0 0 6px #8b5cf6" }} />
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Interview memory — active session</span>
+          </div>
+          <div className="relative pl-7 space-y-6">
+            <div className="absolute left-3 top-0 bottom-0 w-px" style={{ background: "linear-gradient(to bottom, rgba(139,92,246,0.4), rgba(99,102,241,0.1))" }} />
+            {timeline.map(({ min, text, type }, i) => (
+              <div key={i} className="relative">
+                <div
+                  className="absolute -left-4 top-0.5 w-2 h-2 rounded-full"
+                  style={{
+                    background: type === "probe" || type === "followup" ? "#8b5cf6" : "#6366f1",
+                    boxShadow: `0 0 6px ${type === "probe" || type === "followup" ? "#8b5cf6" : "#6366f1"}`,
+                  }}
+                />
+                <p className="text-[10px] font-mono text-slate-500 mb-1">{min}</p>
+                <div
+                  className="px-3 py-2 rounded-lg text-[12px] leading-relaxed"
+                  style={
+                    type === "probe" || type === "followup"
+                      ? { background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)", color: "#c4b5fd" }
+                      : { background: "rgba(99,102,241,0.05)", border: "1px solid rgba(99,102,241,0.1)", color: "#94a3b8" }
+                  }
+                >
+                  {text}
+                </div>
+                {type === "followup" && (
+                  <span className="inline-block mt-1 text-[9px] font-bold uppercase tracking-widest text-violet-400 px-2 py-0.5 rounded-full" style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.2)" }}>
+                    Referenced minute 2:14
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Text */}
+        <div className="space-y-6">
+          <SectionLabel>Interview memory</SectionLabel>
+          <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-white tracking-tight leading-tight">
+            It remembers what you<br className="hidden lg:inline" /> said 20 minutes ago.
+          </h2>
+          <p className="text-[15px] text-slate-400 leading-relaxed max-w-md">
+            Every claim is tracked in a session registry. When you say &ldquo;we reduced latency by 40%&rdquo; at minute 2, Marcus returns to that specific claim at minute 24 — asking for the baseline, the benchmark, and the production measurement.
+          </p>
+          <div className="space-y-3 text-[13px] text-slate-300">
+            {[
+              "Full-session claim registry — no claim slips through",
+              "3-stage ownership probe: individual vs team contribution",
+              "Contradictions flagged, revisited, and re-challenged",
+              "Evidence-backed evaluation with verbatim citations",
+            ].map(t => (
+              <div key={t} className="flex items-start gap-2.5">
+                <svg className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" viewBox="0 0 16 16" fill="none">
+                  <circle cx="8" cy="8" r="7" stroke="#a78bfa" strokeWidth="1" />
+                  <path d="M5 8.25l2 2 4-4.5" stroke="#a78bfa" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {t}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REPORT SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ReportSection() {
+  const { ref, style } = useSectionReveal();
+  const scores = [
+    { label: "Technical Depth", score: 4, max: 5, color: "#6366f1" },
+    { label: "Problem Solving", score: 4, max: 5, color: "#8b5cf6" },
+    { label: "Communication", score: 3, max: 5, color: "#06b6d4" },
+    { label: "System Design", score: 3, max: 5, color: "#10b981" },
+    { label: "Project Ownership", score: 5, max: 5, color: "#f59e0b" },
+  ];
+
+  return (
+    <section ref={ref} style={style} className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+      <div className="text-center mb-14 space-y-4">
+        <SectionLabel>Post-interview evaluation</SectionLabel>
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+          A report built from evidence.
+        </h2>
+        <p className="text-slate-400 text-[15px] max-w-xl mx-auto">
+          No fabricated percentages. Veyra&apos;s scorecard cites verbatim transcript quotes as proof of every assessment.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        {/* Score card */}
+        <div
+          className="rounded-2xl p-6 space-y-5"
+          style={{ background: "rgba(8,9,16,0.95)", border: "1px solid rgba(99,102,241,0.15)", boxShadow: "0 24px 60px rgba(0,0,0,0.6)" }}
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-white/5">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Evaluation — Demo</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "rgba(250,204,21,0.1)", color: "#fbbf24", border: "1px solid rgba(250,204,21,0.2)" }}>Sample</span>
+          </div>
+          {scores.map(({ label, score, max, color }) => (
+            <div key={label} className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[12px] font-medium text-slate-300">{label}</span>
+                <span className="text-[11px] font-bold" style={{ color }}>{score}/{max}</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${(score / max) * 100}%`, background: color, boxShadow: `0 0 8px ${color}60` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Training plan */}
+        <div
+          className="rounded-2xl p-6 space-y-4"
+          style={{ background: "rgba(8,9,16,0.95)", border: "1px solid rgba(139,92,246,0.15)", boxShadow: "0 24px 60px rgba(0,0,0,0.6)" }}
+        >
+          <div className="pb-3 border-b border-white/5 flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Your next 7 days — Demo</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "rgba(250,204,21,0.1)", color: "#fbbf24", border: "1px solid rgba(250,204,21,0.2)" }}>Sample</span>
+          </div>
+          {[
+            { day: "Day 1", task: "Micro-lesson: Kafka offset commit guarantees", color: "#6366f1" },
+            { day: "Day 2", task: "Drill: Consumer group rebalancing scenarios", color: "#8b5cf6" },
+            { day: "Day 3–4", task: "Exercise: Implement idempotent consumer", color: "#06b6d4" },
+            { day: "Day 5", task: "System design: Event-driven at 10M msg/day", color: "#10b981" },
+            { day: "Day 7", task: "Re-interview: Distributed messaging focus", color: "#f59e0b" },
+          ].map(({ day, task, color }) => (
+            <div key={day} className="flex items-start gap-3">
+              <span className="text-[10px] font-mono font-bold shrink-0 pt-0.5" style={{ color }}>{day}</span>
+              <p className="text-[12px] text-slate-400 leading-snug">{task}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CINEMATIC HUMAN PRESENCE SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+function HumanPresenceSection({ persona }: { persona: "marcus" | "elena" }) {
+  const { ref, style } = useSectionReveal();
+  return (
+    <section ref={ref} className="relative py-0 overflow-hidden" style={{ ...style, minHeight: "70vh", display: "flex", alignItems: "center" }}>
+      {/* Full-width photo */}
+      <div className="absolute inset-0">
+        <Image
+          src={persona === "marcus" ? "/avatars/interviewer_male.jpg" : "/avatars/interviewer_female.jpg"}
+          alt="Veyra interviewer"
+          fill
+          className="object-cover object-top opacity-25"
+          sizes="100vw"
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(120deg, rgba(6,7,13,0.97) 0%, rgba(6,7,13,0.7) 50%, rgba(6,7,13,0.92) 100%)" }} />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 py-28">
+        <div className="max-w-2xl space-y-6">
+          <SectionLabel>Human presence</SectionLabel>
+          <h2
+            className="font-extrabold text-white tracking-tight leading-[1.05]"
+            style={{ fontSize: "clamp(40px, 6vw, 76px)" }}
+          >
+            Because interviews<br />are conversations.
+          </h2>
+          <p className="text-[17px] text-slate-300 leading-relaxed max-w-lg">
+            Veyra listens to what you say, understands the context, and decides what to ask next. Not a menu. Not a script. A real exchange.
+          </p>
+          <div className="pt-2">
+            <PrimaryButton href="/interviews/new">
+              Start your interview <Arrow />
+            </PrimaryButton>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FINAL CTA
+// ─────────────────────────────────────────────────────────────────────────────
+
+function FinalCTA({ persona }: { persona: "marcus" | "elena" }) {
+  const { ref, style } = useSectionReveal();
+  return (
+    <section ref={ref} style={style} className="py-32 px-5 sm:px-8 lg:px-12 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div style={{ width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)", filter: "blur(60px)" }} />
+      </div>
+
+      <div className="max-w-3xl mx-auto text-center relative z-10 space-y-8">
+        <BrandLogo size={44} showWordmark={false} />
+        <h2
+          className="font-extrabold text-white tracking-tight leading-tight"
+          style={{ fontSize: "clamp(38px, 5.5vw, 72px)" }}
+        >
+          Your next interview<br />
+          <span style={{ background: "linear-gradient(110deg, #a5b4fc 0%, #818cf8 40%, #c4b5fd 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+            starts here.
+          </span>
+        </h2>
+        <p className="text-[16px] text-slate-400 max-w-md mx-auto">
+          Practice like the interviewer is already in the room.
+        </p>
+
+        {/* Photo row */}
+        <div className="flex justify-center gap-3 py-2">
+          {(["marcus", "elena"] as const).map(p => (
+            <div key={p} className="relative">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2" style={{ borderColor: persona === p ? "#6366f1" : "rgba(255,255,255,0.1)" }}>
+                <Image
+                  src={p === "marcus" ? "/avatars/interviewer_male.jpg" : "/avatars/interviewer_female.jpg"}
+                  alt={p}
+                  width={48} height={48}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          ))}
+          <div className="w-12 h-12 rounded-full flex items-center justify-center text-[11px] font-bold text-indigo-300" style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)" }}>
+            You
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <PrimaryButton href="/signup">
+            Create your account <Arrow />
+          </PrimaryButton>
+          <SecondaryButton href="/login">Sign in</SecondaryButton>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FOOTER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function LandingFooter() {
+  return (
+    <footer className="py-14 px-5 sm:px-8 lg:px-12" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-12">
+          <div className="col-span-2 sm:col-span-1 space-y-4">
+            <BrandLogo size={28} />
+            <p className="text-[12px] text-slate-500 leading-relaxed max-w-xs">
+              AI-powered real-time voice interviews for serious technical preparation.
+            </p>
+          </div>
+          {[
+            {
+              heading: "Product",
+              links: [
+                { label: "Start Interview", href: "/interviews/new" },
+                { label: "Coding", href: "/coding" },
+                { label: "System Design", href: "/system-design" },
+                { label: "Progress", href: "/progress" },
+              ],
+            },
+            {
+              heading: "Account",
+              links: [
+                { label: "Sign Up", href: "/signup" },
+                { label: "Sign In", href: "/login" },
+                { label: "Dashboard", href: "/dashboard" },
+                { label: "Settings", href: "/settings" },
+              ],
+            },
+            {
+              heading: "Legal",
+              links: [
+                { label: "Privacy", href: "/privacy" },
+                { label: "Terms", href: "/terms" },
+              ],
+            },
+          ].map(({ heading, links }) => (
+            <div key={heading} className="space-y-3">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{heading}</p>
+              <ul className="space-y-2">
+                {links.map(({ label, href }) => (
+                  <li key={href}>
+                    <Link href={href} className="text-[13px] text-slate-400 hover:text-white transition-colors">
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+          <p className="text-[11px] text-slate-600">
+            &copy; {new Date().getFullYear()} Veyra. All rights reserved.
+          </p>
+          <p className="text-[11px] text-slate-600">
+            Powered by <span className="text-slate-500">Cartesia Sonic-3.6</span> &amp; <span className="text-slate-500">Ink-2</span>
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HERO SECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+function HeroSection({
+  persona,
+  onPersonaChange,
+  speaking,
+  loading,
+  onVoiceClick,
+}: {
+  persona: "marcus" | "elena";
+  onPersonaChange: (p: "marcus" | "elena") => void;
+  speaking: boolean;
+  loading: boolean;
+  onVoiceClick: () => void;
+}) {
+  return (
+    <section className="relative min-h-[100svh] flex items-center px-5 sm:px-8 lg:px-16 pt-20 pb-16 overflow-hidden">
+      {/* Atmospheric glows */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div style={{ position: "absolute", top: "15%", left: "-5%", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.09) 0%, transparent 65%)", filter: "blur(60px)" }} />
+        <div style={{ position: "absolute", bottom: "10%", right: "-10%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 65%)", filter: "blur(60px)" }} />
+        {/* Subtle grid */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)", backgroundSize: "72px 72px" }} />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        {/* ── LEFT ── */}
+        <div className="flex flex-col gap-7">
+          {/* Eyebrow pill */}
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold text-indigo-300 border" style={{ background: "rgba(99,102,241,0.08)", borderColor: "rgba(99,102,241,0.2)" }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" style={{ boxShadow: "0 0 6px #6366f1" }} />
+              Realtime AI Voice Interviewer
+            </span>
+          </div>
+
+          {/* Main headline */}
+          <h1
+            className="font-extrabold text-white tracking-tight leading-[1.04]"
+            style={{ fontSize: "clamp(42px, 6vw, 86px)" }}
+          >
+            Meet your<br />
+            <span style={{ background: "linear-gradient(110deg, #c7d2fe 0%, #a5b4fc 35%, #818cf8 65%, #c4b5fd 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              AI interviewer.
+            </span>
+          </h1>
+
+          {/* Sub-headline */}
+          <p
+            className="text-slate-300 leading-relaxed max-w-xl"
+            style={{ fontSize: "clamp(15px, 1.6vw, 18px)" }}
+          >
+            Real voice. Real follow-ups. Real preparation.<br className="hidden sm:inline" />
+            Veyra listens to your answer, finds the weak point, and asks the next question.
+          </p>
+
+          {/* Persona toggle */}
+          <div className="flex flex-col gap-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Choose your interviewer</p>
+            <div className="flex gap-3 flex-wrap">
+              {(["marcus", "elena"] as const).map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  data-testid={`persona-${p}`}
+                  onClick={() => onPersonaChange(p)}
+                  className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl transition-all text-left"
+                  style={persona === p
+                    ? { background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.4)" }
+                    : { background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }
+                  }
+                >
+                  <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-white/10">
+                    <Image
+                      src={p === "marcus" ? "/avatars/interviewer_male.jpg" : "/avatars/interviewer_female.jpg"}
+                      alt={p}
+                      width={32} height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold text-white leading-tight">{p === "marcus" ? "Marcus Vance" : "Elena Rostova"}</p>
+                    <p className="text-[10px] text-slate-500 leading-tight">{p === "marcus" ? "Engineering Director" : "Principal Architect"}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-1">
+            <PrimaryButton href="/interviews/new">
+              Start Interview <Arrow />
+            </PrimaryButton>
+            <SecondaryButton onClick={onVoiceClick}>
+              <WaveformBars active={speaking} />
+              <span>{loading ? "Loading..." : speaking ? "Stop" : "Hear the voice"}</span>
+            </SecondaryButton>
+          </div>
+
+          {/* Trust badges */}
+          <div className="flex flex-wrap gap-5 pt-2 text-[11px] text-slate-500">
+            {["Cartesia Sonic-3.6 TTS", "Ink-2 Real-time STT", "No canned questions"].map(badge => (
+              <span key={badge} className="flex items-center gap-1.5">
+                <svg className="w-3 h-3 text-emerald-500" viewBox="0 0 12 12" fill="none">
+                  <circle cx="6" cy="6" r="5.5" stroke="#10b981" strokeWidth="1" />
+                  <path d="M4 6l1.5 1.5L8 4" stroke="#10b981" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {badge}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* ── RIGHT — interviewer panel ── */}
+        <div className="relative flex justify-center lg:justify-end">
+          {/* Decorative rings */}
+          <div aria-hidden className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div style={{ width: "105%", height: "105%", borderRadius: "28px", border: "1px solid rgba(99,102,241,0.08)", position: "absolute" }} />
+          </div>
+
+          <div className="relative" style={{ width: "min(460px, 92vw)" }}>
+            {/* Photo frame */}
+            <div
+              className="relative rounded-2xl overflow-hidden"
+              style={{
+                aspectRatio: "3/4",
+                border: "1px solid rgba(99,102,241,0.2)",
+                boxShadow: "0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(99,102,241,0.06)",
+              }}
+            >
+              <Image
+                src={persona === "marcus" ? "/avatars/interviewer_male.jpg" : "/avatars/interviewer_female.jpg"}
+                alt={persona === "marcus" ? "Marcus Vance" : "Elena Rostova"}
+                fill
+                className="object-cover object-top transition-opacity duration-500"
+                priority
+                sizes="(max-width: 768px) 92vw, 460px"
+              />
+              {/* Gradient overlay */}
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(6,7,13,0.97) 0%, rgba(6,7,13,0.35) 45%, transparent 100%)" }} />
+
+              {/* UI overlay */}
+              <div className="absolute bottom-5 left-5 right-5 space-y-2">
+                {/* Name card */}
+                <div
+                  className="rounded-xl px-4 py-3 flex items-center gap-3"
+                  style={{ background: "rgba(6,7,13,0.85)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(20px)" }}
+                >
+                  <div
+                    className="w-2 h-2 rounded-full shrink-0 transition-all duration-300"
+                    style={speaking
+                      ? { background: "#34d399", boxShadow: "0 0 8px #34d399" }
+                      : { background: "#6366f1", boxShadow: "0 0 6px #6366f1" }
+                    }
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-white truncate">
+                      {persona === "marcus" ? "Marcus Vance" : "Elena Rostova"}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      {speaking ? "Speaking..." : persona === "marcus" ? "Senior Engineering Director" : "Principal Technical Architect"}
+                    </p>
+                  </div>
+                  <WaveformBars active={speaking} bars={7} />
+                </div>
+              </div>
+            </div>
+
+            {/* Floating chips */}
+            <div
+              className="absolute -top-4 -left-4 px-3 py-2 rounded-xl text-[11px] font-semibold"
+              style={{ background: "rgba(6,7,13,0.92)", border: "1px solid rgba(99,102,241,0.25)", color: "#a5b4fc", backdropFilter: "blur(16px)" }}
+            >
+              Real-time voice
+            </div>
+            <div
+              className="absolute -top-4 right-4 px-3 py-2 rounded-xl text-[11px] font-semibold"
+              style={{ background: "rgba(6,7,13,0.92)", border: "1px solid rgba(16,185,129,0.25)", color: "#6ee7b7", backdropFilter: "blur(16px)" }}
+            >
+              AI listening
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROOT COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+export default function LandingPage() {
+  const [persona, setPersona] = useState<"marcus" | "elena">("marcus");
+  const [heroSpeaking, setHeroSpeaking] = useState(false);
+  const [heroLoading, setHeroLoading] = useState(false);
+  const heroSrcRef = useRef<AudioBufferSourceNode | null>(null);
+
+  const handleHeroVoice = useCallback(async () => {
+    if (heroSpeaking) {
+      try { heroSrcRef.current?.stop(); } catch {}
+      heroSrcRef.current = null;
+      setHeroSpeaking(false);
+      return;
+    }
+    setHeroLoading(true);
+    const text =
+      persona === "marcus"
+        ? "Tell me about the most challenging distributed system you've designed. I want to understand the trade-offs you made under pressure."
+        : "Walk me through a critical performance bottleneck you identified and resolved. What was your diagnostic process?";
+    try {
+      const src = await playCartesiaVoice(persona === "marcus" ? "male" : "female", text);
+      heroSrcRef.current = src;
+      if (src) {
+        setHeroSpeaking(true);
+        src.onended = () => { setHeroSpeaking(false); heroSrcRef.current = null; };
+      }
+    } catch {}
+    setHeroLoading(false);
+  }, [heroSpeaking, persona]);
+
+  const handlePersonaChange = (p: "marcus" | "elena") => {
+    if (heroSpeaking) {
+      try { heroSrcRef.current?.stop(); } catch {}
+      setHeroSpeaking(false);
+    }
+    setPersona(p);
+  };
+
+  useEffect(() => {
+    return () => { try { heroSrcRef.current?.stop(); } catch {} };
+  }, []);
+
+  return (
+    <div className="veyra-grain flex flex-col w-full overflow-x-hidden" style={{ background: "#06070d" }}>
+      <HeroSection
+        persona={persona}
+        onPersonaChange={handlePersonaChange}
+        speaking={heroSpeaking}
+        loading={heroLoading}
+        onVoiceClick={handleHeroVoice}
+      />
+      <MarqueeSection />
+      <ProblemSection />
+      <AdaptiveSection />
+      <VoiceSection persona={persona} onPersonaChange={handlePersonaChange} />
+      <ResumeSection />
+      <GitHubSection />
+      <BentoSection />
+      <MemorySection />
+      <ReportSection />
+      <HumanPresenceSection persona={persona} />
+      <FinalCTA persona={persona} />
+      <LandingFooter />
     </div>
   );
 }
