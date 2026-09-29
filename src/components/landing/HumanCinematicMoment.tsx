@@ -216,7 +216,7 @@ export function HumanCinematicMoment() {
                 Experience realistic calibration with Marcus or Elena in your stack.
               </div>
               <Link
-                href="/interviews/new"
+                href="/signup"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-semibold text-xs transition-all shadow-lg shadow-indigo-600/30"
               >
                 <span>Launch Live Session</span>

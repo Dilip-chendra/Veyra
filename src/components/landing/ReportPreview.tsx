@@ -393,7 +393,7 @@ export function ReportPreview() {
                 <span>Private evaluation dossier stored securely. Exportable as PDF or JSON for engineering teams.</span>
               </div>
               <Link
-                href="/interviews/new"
+                href="/signup"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-all shadow-md shrink-0"
               >
                 <span>Generate Your Own Dossier</span>

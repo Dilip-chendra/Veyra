@@ -12,9 +12,9 @@ export const CARTESIA_WS_BASE_URL = "wss://api.cartesia.ai";
 /** Well-known verified Cartesia voice IDs for interviewer personas */
 export const CARTESIA_VOICE_IDS = {
   // Marcus — Clarkson (Executive Tone, male, composed authority)
-  marcus: process.env.CARTESIA_MARCUS_VOICE_ID ?? "c0f43c66-9f21-4034-b485-8f1d3340d759",
+  marcus: (process.env.CARTESIA_MARCUS_VOICE_ID ?? "c0f43c66-9f21-4034-b485-8f1d3340d759").replace(/^["']|["']$/g, "").trim(),
   // Elena — Morgan (Executive Expert, female, technical executive)
-  elena: process.env.CARTESIA_ELENA_VOICE_ID ?? "0ee8beaa-db49-4024-940d-c7ea09b590b3",
+  elena: (process.env.CARTESIA_ELENA_VOICE_ID ?? "0ee8beaa-db49-4024-940d-c7ea09b590b3").replace(/^["']|["']$/g, "").trim(),
 } as const;
 
 /** TTS output format: raw PCM so browser AudioContext can decode it directly */
@@ -31,7 +31,7 @@ export function getCartesiaAPIKey(): string {
       "CARTESIA_API_KEY is not configured. Add it to .env (server-side only)."
     );
   }
-  return key.trim();
+  return key.trim().replace(/^["']|["']$/g, "");
 }
 
 export function getVoiceIdForGender(gender: "male" | "female"): string {
@@ -76,7 +76,10 @@ export async function streamCartesiaTTS(
   const body = {
     model_id: CARTESIA_TTS_MODEL,
     transcript: text,
-    voice: voiceId,
+    voice: {
+      mode: "id",
+      id: voiceId,
+    },
     output_format: TTS_OUTPUT_FORMAT,
   };
 

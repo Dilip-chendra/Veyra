@@ -5,71 +5,143 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Volume2, Sparkles, Shield, Cpu, Square } from "lucide-react";
 
-// Real Cartesia PCM Audio Streaming Player
-async function playCartesiaVoice(gender: "male" | "female", text: string): Promise<AudioBufferSourceNode | null> {
-  const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioContextClass) return null;
-  const audioCtx = new AudioContextClass({ sampleRate: 24000 });
+interface VoicePlayerHandle {
+  stop: () => void;
+  onended?: () => void;
+}
 
-  const res = await fetch("/api/cartesia/tts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, gender, isPreview: true }),
-  });
+// Real Cartesia PCM Audio Streaming Player with Web Speech fallback
+async function playCartesiaVoice(
+  gender: "male" | "female",
+  text: string
+): Promise<VoicePlayerHandle | null> {
+  const AudioContextClass = typeof window !== "undefined"
+    ? (window.AudioContext || (window as any).webkitAudioContext)
+    : null;
 
-  if (!res.ok) throw new Error("TTS request failed");
-
-  const reader = res.body?.getReader();
-  if (!reader) throw new Error("No readable stream");
-
-  const chunks: Float32Array[] = [];
-  let totalSamples = 0;
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() || "";
-
-    for (const line of lines) {
-      if (line.startsWith("data: ")) {
-        const raw = line.slice(6).trim();
-        if (raw === "[DONE]") break;
-        try {
-          const parsed = JSON.parse(raw);
-          if (parsed.audio) {
-            const binary = atob(parsed.audio);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-            const int16 = new Int16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
-            const float32 = new Float32Array(int16.length);
-            for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768.0;
-            chunks.push(float32);
-            totalSamples += float32.length;
-          }
-        } catch {}
+  if (AudioContextClass) {
+    try {
+      const audioCtx = new AudioContextClass({ sampleRate: 44100 });
+      if (audioCtx.state === "suspended") {
+        await audioCtx.resume();
       }
+
+      const res = await fetch("/api/cartesia/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, gender, isPreview: true }),
+      });
+
+      if (res.ok && res.body) {
+        const reader = res.body.getReader();
+        const chunks: Float32Array[] = [];
+        let totalSamples = 0;
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const raw = line.slice(6).trim();
+              if (raw === "[DONE]") break;
+              try {
+                const parsed = JSON.parse(raw);
+                const b64 = parsed.data || parsed.audio;
+                if (b64) {
+                  const binary = atob(b64);
+                  const numFloats = Math.floor(binary.length / 4);
+                  if (numFloats > 0) {
+                    const u8 = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) u8[i] = binary.charCodeAt(i);
+                    const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+                    const f32Chunk = new Float32Array(numFloats);
+                    for (let i = 0; i < numFloats; i++) {
+                      f32Chunk[i] = dv.getFloat32(i * 4, true); // little-endian
+                    }
+                    chunks.push(f32Chunk);
+                    totalSamples += numFloats;
+                  }
+                }
+              } catch {}
+            }
+          }
+        }
+
+        if (totalSamples > 0) {
+          const audioBuffer = audioCtx.createBuffer(1, totalSamples, 44100);
+          const channelData = audioBuffer.getChannelData(0);
+          let offset = 0;
+          for (const chunk of chunks) {
+            channelData.set(chunk, offset);
+            offset += chunk.length;
+          }
+
+          const source = audioCtx.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(audioCtx.destination);
+
+          const handle: VoicePlayerHandle = {
+            stop: () => {
+              try { source.stop(); } catch {}
+              try { audioCtx.close(); } catch {}
+            },
+            onended: undefined,
+          };
+          source.onended = () => {
+            try { audioCtx.close(); } catch {}
+            if (handle.onended) handle.onended();
+          };
+          source.start(0);
+          return handle;
+        }
+      }
+    } catch (e) {
+      console.warn("Cartesia stream encountered error, falling back to speech synthesis:", e);
     }
   }
 
-  if (totalSamples === 0) return null;
+  // Graceful browser SpeechSynthesis fallback
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.98;
+    utter.pitch = gender === "male" ? 0.92 : 1.05;
 
-  const audioBuffer = audioCtx.createBuffer(1, totalSamples, 24000);
-  const channelData = audioBuffer.getChannelData(0);
-  let offset = 0;
-  for (const chunk of chunks) {
-    channelData.set(chunk, offset);
-    offset += chunk.length;
+    const voices = synth.getVoices();
+    if (gender === "male") {
+      const maleVoice = voices.find(v => /david|mark|alex|male|george|james/i.test(v.name));
+      if (maleVoice) utter.voice = maleVoice;
+    } else {
+      const femaleVoice = voices.find(v => /zira|samantha|victoria|female|elena|karen/i.test(v.name));
+      if (femaleVoice) utter.voice = femaleVoice;
+    }
+
+    const handle: VoicePlayerHandle = {
+      stop: () => {
+        synth.cancel();
+      },
+      onended: undefined,
+    };
+
+    utter.onend = () => {
+      if (handle.onended) handle.onended();
+    };
+    utter.onerror = () => {
+      if (handle.onended) handle.onended();
+    };
+
+    synth.speak(utter);
+    return handle;
   }
 
-  const source = audioCtx.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(audioCtx.destination);
-  source.start(0);
-  return source;
+  return null;
 }
 
 const TYPEWRITER_PHRASES = [
@@ -84,7 +156,6 @@ export function HeroExperience() {
   const [selectedPersona, setSelectedPersona] = useState<"marcus" | "elena">("marcus");
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingVoice, setIsLoadingVoice] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   // Typewriter effect state for headline
   const [headlineIndex, setHeadlineIndex] = useState(0);
@@ -94,8 +165,7 @@ export function HeroExperience() {
   // Typewriter effect state for active inquiry probe
   const [probeText, setProbeText] = useState("");
 
-  const currentSourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
+  const currentSourceRef = useRef<VoicePlayerHandle | null>(null);
 
   const personas = {
     marcus: {
@@ -196,16 +266,16 @@ export function HeroExperience() {
 
     try {
       setIsLoadingVoice(true);
-      const source = await playCartesiaVoice(
+      const handle = await playCartesiaVoice(
         selectedPersona === "marcus" ? "male" : "female",
         current.voiceSampleText
       );
       setIsLoadingVoice(false);
 
-      if (source) {
-        currentSourceRef.current = source;
+      if (handle) {
+        currentSourceRef.current = handle;
         setIsPlaying(true);
-        source.onended = () => {
+        handle.onended = () => {
           setIsPlaying(false);
           currentSourceRef.current = null;
         };
@@ -214,19 +284,6 @@ export function HeroExperience() {
       setIsLoadingVoice(false);
       setIsPlaying(false);
     }
-  };
-
-  // Subtle 3D mouse parallax on the focal portrait
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!stageRef.current) return;
-    const rect = stageRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMousePos({ x: x * 10, y: y * -10 });
-  };
-
-  const handleMouseLeave = () => {
-    setMousePos({ x: 0, y: 0 });
   };
 
   return (
@@ -248,7 +305,7 @@ export function HeroExperience() {
       />
 
       <div className="relative max-w-7xl mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start lg:pt-4">
           
           {/* Left Column: Hero Narrative & Controls */}
           <div className="lg:col-span-7 flex flex-col items-start text-left z-10">
@@ -264,18 +321,20 @@ export function HeroExperience() {
               </span>
             </div>
 
-            {/* Monolithic Kinetic Headline with Live Typing Animation */}
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-[-0.035em] leading-[1.04] text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
-              THE INTERVIEW <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-slate-400">
-                ADAPTS TO{" "}
-              </span>
-              <br className="sm:hidden" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-indigo-300 font-serif italic tracking-tight">
-                {headlineText}
-              </span>
-              <span className="inline-block w-1 sm:w-1.5 h-8 sm:h-12 bg-amber-400 animate-pulse ml-1 align-middle" />
-            </h1>
+            {/* Monolithic Kinetic Headline with Stable Fixed Container (Prevents Layout Jitter) */}
+            <div className="w-full min-h-[160px] sm:min-h-[200px] md:min-h-[230px] flex flex-col justify-start">
+              <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-[-0.035em] leading-[1.04] text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
+                THE INTERVIEW <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-slate-400">
+                  ADAPTS TO{" "}
+                </span>
+                <br className="sm:hidden" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-indigo-300 font-serif italic tracking-tight">
+                  {headlineText}
+                </span>
+                <span className="inline-block w-1 sm:w-1.5 h-8 sm:h-12 bg-amber-400 animate-pulse ml-1 align-middle" />
+              </h1>
+            </div>
 
             {/* Subhead with strict product philosophy */}
             <p className="mt-6 text-base sm:text-lg md:text-xl text-slate-300 font-light leading-relaxed max-w-2xl">
@@ -320,7 +379,7 @@ export function HeroExperience() {
             {/* CTA & Voice Preview Row */}
             <div className="mt-8 flex flex-wrap items-center gap-4 w-full sm:w-auto">
               <Link
-                href="/interviews/new"
+                href="/signup"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-xl shadow-indigo-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span>Launch Live Interview</span>
@@ -346,7 +405,7 @@ export function HeroExperience() {
                     ? "Connecting Cartesia..."
                     : isPlaying
                     ? "Pause Voice Sample"
-                    : `Hear ${current.name.split(" ")[0]} Speak (24kHz)`}
+                    : `Hear ${current.name.split(" ")[0]} Speak`}
                 </span>
                 
                 {/* Audio visualizer dots */}
@@ -378,12 +437,9 @@ export function HeroExperience() {
 
           </div>
 
-          {/* Right Column: Perfectly Aligned Focal Interviewer Stage with Live Typewriter Probe */}
+          {/* Right Column: Completely Static Focal Interviewer Stage (No Mouse Tilt / No Layout Shift) */}
           <div 
-            ref={stageRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            className="lg:col-span-5 flex flex-col items-center justify-center perspective-[1200px] w-full"
+            className="lg:col-span-5 flex flex-col items-center justify-center w-full"
           >
             {/* Top context badge (fully visible, aligned) */}
             <div className="w-full max-w-[420px] mb-3 flex items-center justify-between text-xs font-mono text-slate-400 px-1">
@@ -393,17 +449,13 @@ export function HeroExperience() {
               </div>
               <div className="flex items-center gap-1.5 text-emerald-400 text-[11px]">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Live Audio 24kHz</span>
+                <span>Live Audio 44.1kHz</span>
               </div>
             </div>
 
-            {/* Focal Portrait Card with smooth 3D mouse parallax tilt */}
+            {/* Focal Portrait Card: Completely Static */}
             <div 
-              className="relative w-full max-w-[420px] rounded-3xl border border-white/20 bg-gradient-to-b from-white/[0.12] to-white/[0.02] p-2.5 shadow-2xl shadow-black/80 transition-transform duration-200 ease-out"
-              style={{
-                transform: `rotateY(${mousePos.x}deg) rotateX(${mousePos.y}deg)`,
-                transformStyle: "preserve-3d"
-              }}
+              className="relative w-full max-w-[420px] rounded-3xl border border-white/20 bg-gradient-to-b from-white/[0.12] to-white/[0.02] p-2.5 shadow-2xl shadow-black/80"
             >
               
               {/* Photo Viewport */}

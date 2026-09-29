@@ -3,78 +3,150 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 
-// Real Cartesia PCM Audio Streaming Player
-async function playCartesiaVoice(gender: "male" | "female", text: string): Promise<AudioBufferSourceNode | null> {
-  const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioContextClass) return null;
-  const audioCtx = new AudioContextClass({ sampleRate: 24000 });
+interface VoicePlayerHandle {
+  stop: () => void;
+  onended?: () => void;
+}
 
-  const res = await fetch("/api/cartesia/tts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, gender, isPreview: true }),
-  });
+// Real Cartesia PCM Audio Streaming Player with Web Speech fallback
+async function playCartesiaVoice(
+  gender: "male" | "female",
+  text: string
+): Promise<VoicePlayerHandle | null> {
+  const AudioContextClass = typeof window !== "undefined"
+    ? (window.AudioContext || (window as any).webkitAudioContext)
+    : null;
 
-  if (!res.ok) throw new Error("TTS request failed");
-
-  const reader = res.body?.getReader();
-  if (!reader) throw new Error("No readable stream");
-
-  const chunks: Float32Array[] = [];
-  let totalSamples = 0;
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() || "";
-
-    for (const line of lines) {
-      if (line.startsWith("data: ")) {
-        const raw = line.slice(6).trim();
-        if (raw === "[DONE]") break;
-        try {
-          const parsed = JSON.parse(raw);
-          if (parsed.audio) {
-            const binary = atob(parsed.audio);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-            const int16 = new Int16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
-            const float32 = new Float32Array(int16.length);
-            for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768.0;
-            chunks.push(float32);
-            totalSamples += float32.length;
-          }
-        } catch {}
+  if (AudioContextClass) {
+    try {
+      const audioCtx = new AudioContextClass({ sampleRate: 44100 });
+      if (audioCtx.state === "suspended") {
+        await audioCtx.resume();
       }
+
+      const res = await fetch("/api/cartesia/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, gender, isPreview: true }),
+      });
+
+      if (res.ok && res.body) {
+        const reader = res.body.getReader();
+        const chunks: Float32Array[] = [];
+        let totalSamples = 0;
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const raw = line.slice(6).trim();
+              if (raw === "[DONE]") break;
+              try {
+                const parsed = JSON.parse(raw);
+                const b64 = parsed.data || parsed.audio;
+                if (b64) {
+                  const binary = atob(b64);
+                  const numFloats = Math.floor(binary.length / 4);
+                  if (numFloats > 0) {
+                    const u8 = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) u8[i] = binary.charCodeAt(i);
+                    const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+                    const f32Chunk = new Float32Array(numFloats);
+                    for (let i = 0; i < numFloats; i++) {
+                      f32Chunk[i] = dv.getFloat32(i * 4, true); // little-endian
+                    }
+                    chunks.push(f32Chunk);
+                    totalSamples += numFloats;
+                  }
+                }
+              } catch {}
+            }
+          }
+        }
+
+        if (totalSamples > 0) {
+          const audioBuffer = audioCtx.createBuffer(1, totalSamples, 44100);
+          const channelData = audioBuffer.getChannelData(0);
+          let offset = 0;
+          for (const chunk of chunks) {
+            channelData.set(chunk, offset);
+            offset += chunk.length;
+          }
+
+          const source = audioCtx.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(audioCtx.destination);
+
+          const handle: VoicePlayerHandle = {
+            stop: () => {
+              try { source.stop(); } catch {}
+              try { audioCtx.close(); } catch {}
+            },
+            onended: undefined,
+          };
+          source.onended = () => {
+            try { audioCtx.close(); } catch {}
+            if (handle.onended) handle.onended();
+          };
+          source.start(0);
+          return handle;
+        }
+      }
+    } catch (e) {
+      console.warn("Cartesia stream error, falling back to speech synthesis:", e);
     }
   }
 
-  if (totalSamples === 0) return null;
+  // Graceful browser SpeechSynthesis fallback
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.98;
+    utter.pitch = gender === "male" ? 0.92 : 1.05;
 
-  const audioBuffer = audioCtx.createBuffer(1, totalSamples, 24000);
-  const channelData = audioBuffer.getChannelData(0);
-  let offset = 0;
-  for (const chunk of chunks) {
-    channelData.set(chunk, offset);
-    offset += chunk.length;
+    const voices = synth.getVoices();
+    if (gender === "male") {
+      const maleVoice = voices.find(v => /david|mark|alex|male|george|james/i.test(v.name));
+      if (maleVoice) utter.voice = maleVoice;
+    } else {
+      const femaleVoice = voices.find(v => /zira|samantha|victoria|female|elena|karen/i.test(v.name));
+      if (femaleVoice) utter.voice = femaleVoice;
+    }
+
+    const handle: VoicePlayerHandle = {
+      stop: () => {
+        synth.cancel();
+      },
+      onended: undefined,
+    };
+
+    utter.onend = () => {
+      if (handle.onended) handle.onended();
+    };
+    utter.onerror = () => {
+      if (handle.onended) handle.onended();
+    };
+
+    synth.speak(utter);
+    return handle;
   }
 
-  const src = audioCtx.createBufferSource();
-  src.buffer = audioBuffer;
-  src.connect(audioCtx.destination);
-  src.start();
-  return src;
+  return null;
 }
 
 export function RealtimeVoiceExperience() {
   const [persona, setPersona] = useState<"marcus" | "elena">("marcus");
   const [speaking, setSpeaking] = useState(false);
   const [loading, setLoading] = useState(false);
-  const srcRef = useRef<AudioBufferSourceNode | null>(null);
+  const srcRef = useRef<VoicePlayerHandle | null>(null);
 
   const handleVoicePlay = useCallback(async () => {
     if (speaking) {

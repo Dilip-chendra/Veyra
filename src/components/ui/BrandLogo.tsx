@@ -9,9 +9,9 @@ export interface BrandLogoProps {
 }
 
 /**
- * Authentic Veyra Brand Logo & Icon Mark.
- * Faithfully matches the exact stylized aerodynamic dual-wing V silhouette
- * and dual-spectrum periwinkle-to-violet linear gradients.
+ * Official Veyra Brand Logo & Icon Mark.
+ * Faithfully matches the exact signature folded-ribbon V silhouette
+ * and dual-spectrum periwinkle-to-violet linear gradients with origami facet.
  */
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   size = 32,
@@ -33,82 +33,80 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         aria-label="Veyra V Logo"
       >
         <defs>
-          {/* Left Wing Gradient: Luminous Periwinkle to Indigo */}
-          <linearGradient id="brandVeyraLeftGrad" x1="10%" y1="0%" x2="60%" y2="100%">
-            <stop offset="0%" stopColor="#9DB7FD" />
-            <stop offset="25%" stopColor="#8EA4FA" />
-            <stop offset="55%" stopColor="#7C8CEA" />
-            <stop offset="80%" stopColor="#6974CB" />
-            <stop offset="100%" stopColor="#555EA8" />
+          {/* Left Wing Gradient: Luminous Periwinkle to Royal Indigo */}
+          <linearGradient id="brandVeyraLeftGrad" x1="15%" y1="0%" x2="65%" y2="100%">
+            <stop offset="0%" stopColor="#9EB4FD" />
+            <stop offset="45%" stopColor="#8296F8" />
+            <stop offset="100%" stopColor="#6072DE" />
           </linearGradient>
 
-          {/* Right Wing Gradient: Radiant Lavender to Twilight Indigo */}
-          <linearGradient id="brandVeyraRightGrad" x1="85%" y1="0%" x2="35%" y2="100%">
-            <stop offset="0%" stopColor="#BEB9FA" />
-            <stop offset="28%" stopColor="#A39DEE" />
-            <stop offset="60%" stopColor="#8378D8" />
-            <stop offset="85%" stopColor="#5D52AE" />
-            <stop offset="100%" stopColor="#3C317A" />
+          {/* Right Wing Gradient: Radiant Lavender to Twilight Purple */}
+          <linearGradient id="brandVeyraRightGrad" x1="80%" y1="0%" x2="20%" y2="100%">
+            <stop offset="0%" stopColor="#B2ABFB" />
+            <stop offset="45%" stopColor="#9488EE" />
+            <stop offset="100%" stopColor="#6F5FD4" />
           </linearGradient>
 
-          {/* Fold Crease Gradient for authentic 3D depth at the bottom curve */}
-          <linearGradient id="brandVeyraFoldGrad" x1="20%" y1="0%" x2="80%" y2="100%">
-            <stop offset="0%" stopColor="#3E4485" stopOpacity="0.85" />
-            <stop offset="60%" stopColor="#363A75" stopOpacity="0.75" />
-            <stop offset="100%" stopColor="#2D3064" stopOpacity="0.6" />
+          {/* Fold Crease Gradient for origami 3D depth at the apex */}
+          <linearGradient id="brandVeyraFoldGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+            <stop offset="0%" stopColor="#4B539A" />
+            <stop offset="100%" stopColor="#2D3367" />
           </linearGradient>
         </defs>
 
-        {/* Left Main Wing: Sweeping V stroke with natural flare and rounded base */}
+        {/* Main Left Sweeping Arm with rounded top and curved outer contour */}
         <path
-          d="M 5 6.5
-             C 2 7 1 9.5 2 13
-             C 4 20 9.5 35 16 51
-             C 21.5 64 27 77.5 33.5 88
-             C 36.5 93 40.5 96.5 44.5 96.5
-             C 48 96.5 51.5 93 54.5 88
-             C 57.5 83 61.5 78 64.5 75.5
-             C 66.5 73.5 66 70.5 64 69.5
-             C 61.5 68 57.5 68 54 65
-             C 49 61 44 49 38 35
-             C 31.5 21 24.5 11 19.5 8
-             C 15.5 5.5 9.5 6 5 6.5 Z"
+          d="M 16 22
+             C 13 25 12 30 14 36
+             C 18 48 27 68 37 83
+             C 41 89 45 92 49 91
+             C 53 90 56 86 55.5 80
+             C 55 74 51.5 67 47 61
+             C 40 51 31 35 26 23
+             C 24 19 19 19 16 22 Z"
           fill="url(#brandVeyraLeftGrad)"
         />
 
-        {/* Authentic Dimensional Crease / Under-fold */}
+        {/* Origami Fold Facet at the apex */}
         <path
-          d="M 43.5 96.5
-             C 47.5 96.5 51 93 54 88
-             C 57 83 61 78 64 75.5
-             C 65.5 74 65.5 71.5 64 70
-             C 61.5 68.5 57 68.5 53.5 65
-             C 48.5 60.5 44 56 40.5 62
-             C 38 67 40 85 43.5 96.5 Z"
+          d="M 39 84
+             C 43 90 46.5 92.5 49.5 91
+             C 52.5 89.5 56 85 55.5 80
+             C 55 74 51.5 67 47 61
+             C 44 67 41 76 39 84 Z"
           fill="url(#brandVeyraFoldGrad)"
         />
 
-        {/* Right Floating Wing / Petal */}
-        <path
-          d="M 82 3
-             C 87 3.5 92 6 93 10
-             C 93.5 14 90.5 25 85 38
-             C 79.5 49 73.5 58.5 67 61
-             C 62 62.5 58 59.5 57.5 54.5
-             C 57 49 60.5 37.5 66.5 25
-             C 71.5 14 77 5 82 3 Z"
+        {/* Detached Floating Right Pill / Capsule */}
+        <rect
+          x="57"
+          y="17"
+          width="17.5"
+          height="45"
+          rx="8.75"
+          transform="rotate(20 65.75 39.5)"
           fill="url(#brandVeyraRightGrad)"
         />
       </svg>
 
-      {/* Wordmark "VEYRA" */}
+      {/* Styled Wordmark "VEYRA." */}
       {showWordmark && (
         <span
-          className={`font-mono font-bold tracking-tight text-white ${
-            size >= 40 ? "text-2xl" : size >= 32 ? "text-lg" : "text-base"
+          className={`font-sans font-black tracking-[-0.035em] text-white flex items-baseline leading-none ${
+            size >= 40 ? "text-2xl" : size >= 32 ? "text-xl" : "text-base"
           } ${wordmarkClassName}`}
         >
-          VEYRA<span className="text-indigo-400">.</span>
+          <span>VEYRA</span>
+          <span 
+            className="inline-block rounded-full bg-[#8194F8] shrink-0 shadow-[0_0_8px_rgba(129,148,248,0.6)]"
+            style={{
+              width: size >= 40 ? "6.5px" : size >= 32 ? "5px" : "4px",
+              height: size >= 40 ? "6.5px" : size >= 32 ? "5px" : "4px",
+              marginLeft: size >= 40 ? "4px" : "3px",
+              marginBottom: size >= 40 ? "2px" : "1.5px",
+            }}
+            aria-hidden="true"
+          />
         </span>
       )}
     </div>

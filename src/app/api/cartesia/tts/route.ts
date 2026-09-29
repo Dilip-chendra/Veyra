@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  // Require session unless this is a short preview request (max 150 chars)
-  if (!session && (!isPreview || text.length > 150)) {
+  // Require session unless this is a short preview request (max 500 chars)
+  if (!session && (!isPreview || text.length > 500)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 
 export function CinematicVideoSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -34,22 +35,22 @@ export function CinematicVideoSection() {
     return () => observer.disconnect();
   }, []);
 
-  const togglePlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.paused) {
-      video.play().then(() => setIsPlaying(true)).catch(() => {});
-    } else {
-      video.pause();
-      setIsPlaying(false);
+  const toggleMute = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
     }
-  };
-
-  const toggleMute = () => {
     const video = videoRef.current;
     if (!video) return;
-    video.muted = !video.muted;
-    setIsMuted(video.muted);
+
+    if (video.muted) {
+      video.muted = false;
+      video.volume = 1.0;
+      video.play().catch(() => {});
+      setIsMuted(false);
+    } else {
+      video.muted = true;
+      setIsMuted(true);
+    }
   };
 
   return (
@@ -77,9 +78,9 @@ export function CinematicVideoSection() {
           }}
         />
 
-        {/* Video Player Frame */}
+        {/* Video Player Frame with only clean Mute/Unmute control */}
         <div
-          className="group relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 bg-black/90 shadow-2xl shadow-indigo-950/60 aspect-[16/9] w-full"
+          className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 bg-black/90 shadow-2xl shadow-indigo-950/60 aspect-[16/9] w-full"
           style={{
             boxShadow: "0 30px 100px -15px rgba(0, 0, 0, 0.95), 0 0 60px -10px rgba(99, 102, 241, 0.2)",
           }}
@@ -91,57 +92,39 @@ export function CinematicVideoSection() {
             muted={isMuted}
             loop
             playsInline
-            preload="metadata"
+            preload="auto"
             className="w-full h-full object-contain bg-black"
           />
 
-          {/* Top Live Badge */}
-          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-mono text-slate-200 bg-black/60 backdrop-blur-md border border-white/10 pointer-events-none">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Actual Veyra Live Session</span>
-          </div>
-
-          {/* Audio Toggle */}
-          <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+          {/* Clean Working Mute / Unmute Button (Only overlay on the video) */}
+          <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-30">
             <button
               type="button"
               onClick={toggleMute}
-              className="px-3.5 py-1.5 rounded-full text-xs font-mono text-slate-200 bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/10 transition-all flex items-center gap-2 cursor-pointer"
+              className={`px-4 py-2.5 rounded-full text-xs font-mono font-semibold transition-all duration-200 flex items-center gap-2.5 shadow-2xl backdrop-blur-md border cursor-pointer ${
+                isMuted
+                  ? "bg-black/80 hover:bg-black text-white border-white/20 hover:border-white/40"
+                  : "bg-indigo-600/90 hover:bg-indigo-600 text-white border-indigo-400/50 shadow-indigo-600/40"
+              }`}
               aria-label={isMuted ? "Unmute video" : "Mute video"}
             >
-              <span>{isMuted ? "Unmute Audio" : "Mute Audio"}</span>
-            </button>
-          </div>
-
-          {/* Center Play/Pause button on hover */}
-          <div
-            onClick={togglePlay}
-            className={`absolute inset-0 flex items-center justify-center cursor-pointer transition-opacity duration-300 ${
-              !isPlaying ? "opacity-100 bg-black/40" : "opacity-0 group-hover:opacity-100 bg-black/20"
-            }`}
-          >
-            <div className="w-16 h-16 rounded-full bg-indigo-600/80 hover:bg-indigo-500 text-white flex items-center justify-center shadow-xl backdrop-blur-md border border-white/20 transition-transform transform hover:scale-110">
-              {isPlaying ? (
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="6" y="4" width="4" height="16" rx="1" />
-                  <rect x="14" y="4" width="4" height="16" rx="1" />
-                </svg>
+              {isMuted ? (
+                <>
+                  <VolumeX className="w-4 h-4 text-slate-300" />
+                  <span>Unmute Audio</span>
+                </>
               ) : (
-                <svg className="w-6 h-6 ml-1" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M5 3l14 9-14 9V3z" />
-                </svg>
+                <>
+                  <Volume2 className="w-4 h-4 text-emerald-300" />
+                  <span>Mute Audio</span>
+                  <div className="flex items-center gap-0.5 ml-0.5">
+                    <span className="w-0.5 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                    <span className="w-0.5 h-3.5 bg-emerald-400 rounded-full animate-pulse delay-75" />
+                    <span className="w-0.5 h-2 bg-emerald-400 rounded-full animate-pulse delay-150" />
+                  </div>
+                </>
               )}
-            </div>
-          </div>
-
-          {/* Bottom Metabar */}
-          <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 flex items-center justify-between text-[11px] font-mono text-slate-400 bg-black/70 backdrop-blur-md px-5 py-2.5 rounded-xl border border-white/10 pointer-events-none">
-            <div className="flex items-center gap-2">
-              <span className="text-white font-bold">Elena Rostova</span>
-              <span className="text-slate-600">•</span>
-              <span>Principal Technical Architect</span>
-            </div>
-            <div className="text-indigo-400 font-mono">1080p HD • Realtime Sync</div>
+            </button>
           </div>
         </div>
       </div>
