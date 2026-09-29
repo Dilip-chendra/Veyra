@@ -44,7 +44,7 @@ async function verifyLanding() {
 
   const checks = [
     { name: "01. Hero Section", passed: lowerText.includes("the interview") && lowerText.includes("adapts to you") },
-    { name: "02. Brand Ecosystem Wall", passed: lowerText.includes("built for candidates targeting top mncs") },
+    { name: "02. Brand Ecosystem Wall", passed: lowerText.includes("trusted by") && lowerText.includes("communication") },
     { name: "03. Kinetic Manifesto", passed: lowerText.includes("an interview") && lowerText.includes("is not a script") },
     { name: "04. Conveyor vs Dynamic Flow", passed: lowerText.includes("conveyor belt") && lowerText.includes("dynamic cross-examination") },
     { name: "05. Live Adaptive Dialogue", passed: lowerText.includes("every question emerges from your last sentence") },
@@ -92,10 +92,10 @@ async function verifyLanding() {
 
   // Capture Marquee Section screenshot
   await page.evaluate(() => {
-    const marqueeSection = document.querySelector("section.py-20");
+    const marqueeSection = document.querySelector("#ecosystem");
     if (marqueeSection) marqueeSection.scrollIntoView();
   });
-  await new Promise(r => setTimeout(r, 600));
+  await new Promise(r => setTimeout(r, 800));
   await page.screenshot({ path: "tests/qa_marquee_desktop.png" });
   console.log("Saved: tests/qa_marquee_desktop.png");
 
