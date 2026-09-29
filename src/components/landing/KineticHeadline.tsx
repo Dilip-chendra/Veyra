@@ -33,7 +33,7 @@ export function KineticHeadline() {
         {/* Giant Monolithic Statement */}
         <div className="mb-20 space-y-4">
           <div className="text-[11px] font-mono uppercase tracking-[0.25em] text-indigo-400">
-            02 / Kinetic Principles
+            04 / Kinetic Principles
           </div>
           <h2 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[0.95] max-w-4xl">
             AN INTERVIEW<br />

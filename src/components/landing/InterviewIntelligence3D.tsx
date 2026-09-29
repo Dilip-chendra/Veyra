@@ -195,7 +195,7 @@ export function InterviewIntelligence3D() {
         <div className="lg:col-span-6 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400 border border-indigo-500/20 bg-indigo-500/[0.05]">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            04 / Adaptive Architecture
+            11 / Adaptive Architecture
           </div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.08]">

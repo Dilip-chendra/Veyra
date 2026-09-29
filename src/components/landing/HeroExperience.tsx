@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Volume2, Sparkles, Shield, Cpu, Square, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Volume2, Sparkles, Shield, Cpu, Square } from "lucide-react";
 
 // Real Cartesia PCM Audio Streaming Player
 async function playCartesiaVoice(gender: "male" | "female", text: string): Promise<AudioBufferSourceNode | null> {
@@ -72,12 +72,28 @@ async function playCartesiaVoice(gender: "male" | "female", text: string): Promi
   return source;
 }
 
+const TYPEWRITER_PHRASES = [
+  "YOUR SYSTEM ARCHITECTURE.",
+  "YOUR REAL CODE COMMITS.",
+  "YOUR CONCURRENCY TRADEOFFS.",
+  "YOUR EXACT RESUME CLAIMS.",
+  "YOUR FAILURE DOMAIN LOGIC.",
+];
+
 export function HeroExperience() {
   const [selectedPersona, setSelectedPersona] = useState<"marcus" | "elena">("marcus");
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingVoice, setIsLoadingVoice] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  
+
+  // Typewriter effect state for headline
+  const [headlineIndex, setHeadlineIndex] = useState(0);
+  const [headlineText, setHeadlineText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Typewriter effect state for active inquiry probe
+  const [probeText, setProbeText] = useState("");
+
   const currentSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
 
@@ -105,6 +121,50 @@ export function HeroExperience() {
   };
 
   const current = personas[selectedPersona];
+
+  // 1. Headline Typewriter Effect Loop
+  useEffect(() => {
+    const fullPhrase = TYPEWRITER_PHRASES[headlineIndex];
+    const typingSpeed = isDeleting ? 38 : 65;
+
+    const timer = setTimeout(() => {
+      if (!isDeleting) {
+        if (headlineText.length < fullPhrase.length) {
+          setHeadlineText(fullPhrase.slice(0, headlineText.length + 1));
+        } else {
+          // Pause before deleting
+          setTimeout(() => setIsDeleting(true), 2000);
+        }
+      } else {
+        if (headlineText.length > 0) {
+          setHeadlineText(fullPhrase.slice(0, headlineText.length - 1));
+        } else {
+          setIsDeleting(false);
+          setHeadlineIndex((prev) => (prev + 1) % TYPEWRITER_PHRASES.length);
+        }
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timer);
+  }, [headlineText, isDeleting, headlineIndex]);
+
+  // 2. Active Probe Typewriter Effect (runs when persona changes)
+  useEffect(() => {
+    setProbeText("");
+    let charIdx = 0;
+    const probe = current.activeProbe;
+
+    const interval = setInterval(() => {
+      if (charIdx <= probe.length) {
+        setProbeText(probe.slice(0, charIdx));
+        charIdx++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 24);
+
+    return () => clearInterval(interval);
+  }, [selectedPersona, current.activeProbe]);
 
   // Stop any active audio when switching persona or unmounting
   const stopAudio = useCallback(() => {
@@ -171,7 +231,7 @@ export function HeroExperience() {
 
   return (
     <section 
-      className="relative min-h-[90vh] flex flex-col justify-center pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-[#06070d] text-white overflow-hidden"
+      className="relative min-h-[92vh] flex flex-col justify-center pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-[#06070d]/80 text-white overflow-hidden"
     >
       {/* Background ambient lighting */}
       <div 
@@ -204,17 +264,22 @@ export function HeroExperience() {
               </span>
             </div>
 
-            {/* Monolithic Kinetic Headline */}
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.04] text-white">
+            {/* Monolithic Kinetic Headline with Live Typing Animation */}
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-[-0.035em] leading-[1.04] text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
               THE INTERVIEW <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-white to-slate-400">
-                ADAPTS TO YOU.
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-slate-400">
+                ADAPTS TO{" "}
               </span>
+              <br className="sm:hidden" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-indigo-300 font-serif italic tracking-tight">
+                {headlineText}
+              </span>
+              <span className="inline-block w-1 sm:w-1.5 h-8 sm:h-12 bg-amber-400 animate-pulse ml-1 align-middle" />
             </h1>
 
             {/* Subhead with strict product philosophy */}
             <p className="mt-6 text-base sm:text-lg md:text-xl text-slate-300 font-light leading-relaxed max-w-2xl">
-              Veyra doesn&apos;t just ask questions. Veyra <strong className="text-white font-semibold">interviews you</strong>. 
+              Veyra doesn&apos;t just ask questions. Veyra <strong className="text-white font-semibold underline decoration-indigo-500/50 underline-offset-4">interviews you</strong>. 
               An autonomous engineering director that inspects your actual code, listens to your architectural choices, 
               and interrogates edge cases in real time with sub-200ms voice turn latency.
             </p>
@@ -313,14 +378,14 @@ export function HeroExperience() {
 
           </div>
 
-          {/* Right Column: Properly Aligned Focal Interviewer Stage */}
+          {/* Right Column: Perfectly Aligned Focal Interviewer Stage with Live Typewriter Probe */}
           <div 
             ref={stageRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             className="lg:col-span-5 flex flex-col items-center justify-center perspective-[1200px] w-full"
           >
-            {/* Top context badge (fully visible, perfectly aligned) */}
+            {/* Top context badge (fully visible, aligned) */}
             <div className="w-full max-w-[420px] mb-3 flex items-center justify-between text-xs font-mono text-slate-400 px-1">
               <div className="flex items-center gap-2 text-indigo-300">
                 <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
@@ -372,16 +437,22 @@ export function HeroExperience() {
                   </div>
                 </div>
 
-                {/* Sleek Probe Overlay at bottom of portrait */}
-                <div className="absolute bottom-3 left-3 right-3 p-3.5 rounded-xl bg-black/80 backdrop-blur-md border border-white/15 shadow-xl">
-                  <div className="flex items-center justify-between text-[10px] font-mono text-indigo-300 uppercase tracking-wider mb-1">
-                    <span>Active Inquiry Probe</span>
-                    <span className="text-slate-400">{current.contextTag}</span>
+                {/* Sleek Live Typing Probe Overlay at bottom of portrait */}
+                <div className="absolute bottom-3 left-3 right-3 p-3.5 rounded-xl bg-black/80 backdrop-blur-md border border-white/15 shadow-xl min-h-[96px] flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-indigo-300 uppercase tracking-wider mb-1">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping" />
+                        Active Inquiry Probe
+                      </span>
+                      <span className="text-slate-400">{current.contextTag}</span>
+                    </div>
+                    <p className="text-xs sm:text-[13px] text-white font-medium leading-snug italic font-serif">
+                      &ldquo;{probeText}&rdquo;
+                      <span className="inline-block w-1 h-3 bg-amber-400 animate-pulse ml-0.5 align-middle" />
+                    </p>
                   </div>
-                  <p className="text-xs sm:text-[13px] text-white font-medium leading-snug italic font-serif">
-                    &ldquo;{current.activeProbe}&rdquo;
-                  </p>
-                  <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                  <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-slate-400">
                     <span className="text-slate-200 font-semibold">{current.name}</span>
                     <span>{current.role}</span>
                   </div>
@@ -391,7 +462,7 @@ export function HeroExperience() {
 
             </div>
 
-            {/* Bottom feature pill (fully visible, perfectly aligned) */}
+            {/* Bottom feature pill (fully visible, aligned) */}
             <div className="w-full max-w-[420px] mt-3 flex items-center justify-between text-xs font-mono text-slate-400 px-1">
               <span className="text-slate-400">Sub-200ms Turn-Taking</span>
               <span className="text-indigo-400">Zero Scripting Engine</span>

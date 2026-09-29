@@ -9,7 +9,7 @@ export function InterviewFlowVisualization() {
     <section className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full bg-[#06070d]">
       <div className="text-center mb-16 space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 border border-white/10 bg-white/[0.02]">
-          03 / Methodological Divergence
+          05 / Methodological Divergence
         </div>
         <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-3xl mx-auto">
           THE CONVEYOR BELT VS. DYNAMIC CROSS-EXAMINATION.

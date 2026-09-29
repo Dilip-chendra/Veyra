@@ -43,13 +43,13 @@ async function verifyLanding() {
   const lowerText = bodyText.toLowerCase();
 
   const checks = [
-    { name: "01. Hero Section", passed: lowerText.includes("the interview") && lowerText.includes("adapts to you") },
-    { name: "02. Brand Ecosystem Wall", passed: lowerText.includes("trusted by") && lowerText.includes("communication") },
-    { name: "03. Kinetic Manifesto", passed: lowerText.includes("an interview") && lowerText.includes("is not a script") },
-    { name: "04. Conveyor vs Dynamic Flow", passed: lowerText.includes("conveyor belt") && lowerText.includes("dynamic cross-examination") },
-    { name: "05. Live Adaptive Dialogue", passed: lowerText.includes("every question emerges from your last sentence") },
-    { name: "06. Realtime Voice Experience", passed: lowerText.includes("not a chatbot") && lowerText.includes("a conversation") },
-    { name: "07. Cinematic Product Video", passed: lowerText.includes("see what an interview with veyra feels like") },
+    { name: "01. Hero Section", passed: lowerText.includes("the interview") && lowerText.includes("adapts to") },
+    { name: "02. Cinematic Product Video", passed: lowerText.includes("see what an interview with veyra feels like") },
+    { name: "03. Brand Ecosystem Wall", passed: lowerText.includes("trusted by") && lowerText.includes("communication") },
+    { name: "04. Kinetic Manifesto", passed: lowerText.includes("an interview") && lowerText.includes("is not a script") },
+    { name: "05. Conveyor vs Dynamic Flow", passed: lowerText.includes("conveyor belt") && lowerText.includes("dynamic cross-examination") },
+    { name: "06. Live Adaptive Dialogue", passed: lowerText.includes("every question emerges from your last sentence") },
+    { name: "07. Realtime Voice Experience", passed: lowerText.includes("not a chatbot") && lowerText.includes("a conversation") },
     { name: "08. Resume Intelligence", passed: lowerText.includes("your resume becomes the interview blueprint") },
     { name: "09. Job & Skill Graph", passed: lowerText.includes("job description → targeted skill graph") },
     { name: "10. Project Defense Scene", passed: lowerText.includes("defend your actual github repositories") },

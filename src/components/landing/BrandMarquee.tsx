@@ -120,7 +120,7 @@ export function BrandMarquee() {
         {/* Golden Pill Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 backdrop-blur-md text-amber-300 text-xs font-mono uppercase tracking-widest shadow-[0_0_20px_rgba(245,158,11,0.2)]">
           <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-          <span>Professional Mastery &amp; Growth</span>
+          <span>03 / Top-Tier Ecosystem · Professional Mastery &amp; Growth</span>
         </div>
 
         {/* Headline with 'TRUSTED BY' in glowing golden letters */}

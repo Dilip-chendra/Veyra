@@ -37,7 +37,7 @@ export function AdaptiveInterviewScene() {
         <div className="lg:col-span-5 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400 border border-indigo-500/20 bg-indigo-500/[0.05]">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-            05 / Live Conversation Mechanics
+            06 / Live Conversation Mechanics
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.05]">
             EVERY QUESTION EMERGES FROM YOUR LAST SENTENCE.
