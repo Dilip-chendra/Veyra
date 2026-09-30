@@ -109,7 +109,7 @@ export function ReportPreview() {
   ];
 
   return (
-    <section className="relative py-28 px-4 sm:px-6 lg:px-8 bg-[#07090e] border-t border-b border-white/[0.06] overflow-hidden">
+    <section className="relative z-10 py-28 px-4 sm:px-6 lg:px-8 bg-transparent border-t border-b border-white/[0.06] overflow-hidden">
       {/* Background ambient lighting */}
       <div 
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] pointer-events-none rounded-full blur-[140px] opacity-15"
@@ -123,10 +123,10 @@ export function ReportPreview() {
             <FileText className="w-3.5 h-3.5 text-indigo-400" />
             Post-Interview Intelligence Dossier
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-[1.15]">
-            Not a vague pass/fail score. <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-white to-slate-400">
-              A comprehensive technical diagnostic.
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12] uppercase">
+            NOT A VAGUE PASS/FAIL SCORE. <br className="hidden sm:inline" />
+            <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
+              A COMPREHENSIVE TECHNICAL DIAGNOSTIC.
             </span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-slate-400 font-light leading-relaxed">

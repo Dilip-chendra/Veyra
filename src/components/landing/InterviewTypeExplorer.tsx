@@ -44,14 +44,17 @@ export function InterviewTypeExplorer() {
   const [activeType, setActiveType] = useState(TYPES[0]);
 
   return (
-    <section id="interview-types" className="py-32 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full bg-[#06070d]">
+    <section id="interview-types" className="py-32 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full relative z-10 bg-transparent">
       <div className="text-center mb-16 space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400 border border-indigo-500/20 bg-indigo-500/[0.05]">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
           12 / Precision Calibration
         </div>
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight max-w-3xl mx-auto">
-          EVERY DISCIPLINE. PRECISELY TUNED.
+        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight max-w-4xl mx-auto uppercase">
+          EVERY DISCIPLINE.{" "}
+          <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
+            PRECISELY TUNED.
+          </span>
         </h2>
         <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
           Select an interview track to see how Veyra shifts its evaluation engine from whiteboard architectures to real-time coding execution.
@@ -77,7 +80,7 @@ export function InterviewTypeExplorer() {
       </div>
 
       {/* Dynamic Morphing Stage */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center rounded-3xl border border-white/10 bg-[#0d0e17] p-6 sm:p-10 shadow-2xl">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center rounded-3xl border border-white/10 bg-[#0d0e17]/80 backdrop-blur-md p-6 sm:p-10 shadow-2xl">
         {/* Left Specification */}
         <div className="lg:col-span-5 space-y-6">
           <div className="text-[10px] font-mono uppercase tracking-widest text-indigo-400">

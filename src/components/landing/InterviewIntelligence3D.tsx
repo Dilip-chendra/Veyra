@@ -181,7 +181,7 @@ export function InterviewIntelligence3D() {
   }, []);
 
   return (
-    <section className="relative py-32 bg-[#06070d] overflow-hidden">
+    <section className="relative z-10 py-32 bg-transparent overflow-hidden">
       {/* Background Lighting */}
       <div
         aria-hidden
@@ -198,8 +198,11 @@ export function InterviewIntelligence3D() {
             11 / Adaptive Architecture
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.08]">
-            THE INTERVIEW INTELLIGENCE CORE.
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.08] uppercase">
+            THE INTERVIEW{" "}
+            <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
+              INTELLIGENCE CORE.
+            </span>
           </h2>
 
           <p className="text-slate-400 text-base sm:text-lg leading-relaxed max-w-xl">

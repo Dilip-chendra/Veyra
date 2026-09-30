@@ -93,7 +93,7 @@ function SeamlessMarqueeRow({
 
 export function BrandMarquee() {
   return (
-    <section id="ecosystem" className="relative py-24 overflow-hidden bg-[#06070d] border-t border-b border-white/[0.06]">
+    <section id="ecosystem" className="relative z-10 py-24 overflow-hidden bg-transparent border-t border-b border-white/[0.06]">
       {/* Golden & Indigo ambient glow in background */}
       <div
         aria-hidden
@@ -106,12 +106,12 @@ export function BrandMarquee() {
       <div
         aria-hidden
         className="pointer-events-none absolute left-0 top-0 bottom-0 w-28 sm:w-48 z-10"
-        style={{ background: "linear-gradient(to right, #06070d 0%, transparent 100%)" }}
+        style={{ background: "linear-gradient(to right, rgba(6,7,13,0.85) 0%, transparent 100%)" }}
       />
       <div
         aria-hidden
         className="pointer-events-none absolute right-0 top-0 bottom-0 w-28 sm:w-48 z-10"
-        style={{ background: "linear-gradient(to left, #06070d 0%, transparent 100%)" }}
+        style={{ background: "linear-gradient(to left, rgba(6,7,13,0.85) 0%, transparent 100%)" }}
       />
 
       {/* Section Header with Golden Lettering & Inspiring Copy */}
@@ -124,8 +124,8 @@ export function BrandMarquee() {
         </div>
 
         {/* Headline with 'TRUSTED BY' in glowing golden letters */}
-        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.08]">
-          <span className="inline-block bg-gradient-to-r from-[#FFE57F] via-[#FFD700] to-[#FFA000] bg-clip-text text-transparent font-black tracking-wider drop-shadow-[0_2px_24px_rgba(255,215,0,0.45)]">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.08] uppercase">
+          <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
             TRUSTED BY
           </span>{" "}
           <br className="sm:hidden" />

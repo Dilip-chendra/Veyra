@@ -288,7 +288,7 @@ export function HeroExperience() {
 
   return (
     <section 
-      className="relative min-h-[92vh] flex flex-col justify-center pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-[#06070d]/80 text-white overflow-hidden"
+      className="relative z-10 min-h-[92vh] flex flex-col justify-center pt-28 pb-20 px-4 sm:px-6 lg:px-8 bg-transparent text-white overflow-hidden"
     >
       {/* Background ambient lighting */}
       <div 
@@ -329,7 +329,7 @@ export function HeroExperience() {
                   ADAPTS TO{" "}
                 </span>
                 <br className="sm:hidden" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-indigo-300 font-serif italic tracking-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100 font-serif italic tracking-tight">
                   {headlineText}
                 </span>
                 <span className="inline-block w-1 sm:w-1.5 h-8 sm:h-12 bg-amber-400 animate-pulse ml-1 align-middle" />

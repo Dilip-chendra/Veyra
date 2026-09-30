@@ -4,14 +4,17 @@ import React from "react";
 
 export function InterviewMemoryTimeline() {
   return (
-    <section className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full bg-[#06070d]">
+    <section className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full relative z-10 bg-transparent">
       <div className="text-center mb-16 space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400 border border-indigo-500/20 bg-indigo-500/[0.05]">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
           11 / Multi-Turn Context Tracking
         </div>
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight max-w-3xl mx-auto">
-          INTERVIEW MEMORY ACROSS 20+ TURNS.
+        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight max-w-4xl mx-auto uppercase">
+          INTERVIEW MEMORY{" "}
+          <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
+            ACROSS 20+ TURNS.
+          </span>
         </h2>
         <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
           Veyra remembers what you said ten minutes ago. If you make a claim in Turn 2, Veyra connects it when cross-examining your system design choices in Turn 14.

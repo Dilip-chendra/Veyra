@@ -6,13 +6,16 @@ export function InterviewFlowVisualization() {
   const [activeBranch, setActiveBranch] = useState<"why" | "depth" | "evidence">("why");
 
   return (
-    <section className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full bg-[#06070d]">
+    <section className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full relative z-10 bg-transparent">
       <div className="text-center mb-16 space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 border border-white/10 bg-white/[0.02]">
           05 / Methodological Divergence
         </div>
-        <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-3xl mx-auto">
-          THE CONVEYOR BELT VS. DYNAMIC CROSS-EXAMINATION.
+        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight max-w-4xl mx-auto uppercase">
+          THE CONVEYOR BELT VS.{" "}
+          <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
+            DYNAMIC CROSS-EXAMINATION.
+          </span>
         </h2>
         <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
           Standard practice platforms read pre-written questions off a list. Veyra branches intelligently based on the specific architectural choices and trade-offs you articulate.

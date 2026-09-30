@@ -6,14 +6,17 @@ export function ProjectDefenseScene() {
   const [activeFile, setActiveFile] = useState("consumer.py");
 
   return (
-    <section className="py-32 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full bg-[#06070d]">
+    <section className="py-32 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full relative z-10 bg-transparent">
       <div className="text-center mb-16 space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400 border border-indigo-500/20 bg-indigo-500/[0.05]">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
           10 / Real Repository Defense
         </div>
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight max-w-3xl mx-auto">
-          DEFEND YOUR ACTUAL GITHUB REPOSITORIES.
+        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight max-w-4xl mx-auto uppercase">
+          DEFEND YOUR{" "}
+          <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
+            ACTUAL GITHUB REPOSITORIES.
+          </span>
         </h2>
         <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
           Connect your GitHub or paste a repo URL. Veyra inspects your actual commits, framework choices, and edge cases, testing if you wrote and understand the code you claim.

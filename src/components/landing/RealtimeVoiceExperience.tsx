@@ -186,7 +186,7 @@ export function RealtimeVoiceExperience() {
   }, []);
 
   return (
-    <section id="features" className="py-32 bg-[#06070d] border-t border-white/[0.04] relative overflow-hidden">
+    <section id="features" className="py-32 bg-transparent border-t border-white/[0.04] relative z-10 overflow-hidden">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
         {/* Left Narrative */}
         <div className="lg:col-span-6 space-y-6">
@@ -195,10 +195,10 @@ export function RealtimeVoiceExperience() {
             07 / Realtime Audio Synthesis
           </div>
 
-          <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[0.98]">
+          <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[0.98] uppercase">
             NOT A CHATBOT.<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-white to-purple-300">
-              A CONVERSATION.
+            <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
+              A REAL CONVERSATION.
             </span>
           </h2>
 

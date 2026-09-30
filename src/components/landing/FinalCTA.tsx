@@ -6,7 +6,7 @@ import { ArrowRight, ShieldCheck, Zap, Radio, Sparkles } from "lucide-react";
 
 export function FinalCTA() {
   return (
-    <section className="relative py-32 px-4 sm:px-6 lg:px-8 bg-[#040508] text-white overflow-hidden border-t border-white/[0.08]">
+    <section className="relative z-10 py-32 px-4 sm:px-6 lg:px-8 bg-transparent text-white overflow-hidden border-t border-white/[0.08]">
       {/* Ambient background glow */}
       <div 
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] pointer-events-none rounded-full blur-[180px] opacity-20"
@@ -22,9 +22,9 @@ export function FinalCTA() {
         </div>
 
         {/* Heroic Statement */}
-        <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] max-w-4xl mx-auto">
+        <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] max-w-4xl mx-auto uppercase">
           STOP REHEARSING SCRIPTS. <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-white to-slate-400">
+          <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
             START DEFENDING REAL DECISIONS.
           </span>
         </h2>

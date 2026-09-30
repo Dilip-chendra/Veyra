@@ -20,7 +20,7 @@ export function KineticHeadline() {
   }, []);
 
   return (
-    <section className="relative py-32 bg-[#06070d] border-t border-b border-white/[0.04] overflow-hidden">
+    <section className="relative z-10 py-32 bg-transparent border-t border-b border-white/[0.04] overflow-hidden">
       {/* Background Subtle Typography */}
       <div
         aria-hidden
@@ -35,9 +35,9 @@ export function KineticHeadline() {
           <div className="text-[11px] font-mono uppercase tracking-[0.25em] text-indigo-400">
             04 / Kinetic Principles
           </div>
-          <h2 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[0.95] max-w-4xl">
+          <h2 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[0.95] max-w-4xl uppercase">
             AN INTERVIEW<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 via-white to-indigo-300">
+            <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
               IS NOT A SCRIPT.
             </span>
           </h2>

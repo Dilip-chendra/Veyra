@@ -31,7 +31,7 @@ export function AdaptiveInterviewScene() {
   }, [isPlaying]);
 
   return (
-    <section className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full bg-[#06070d]">
+    <section className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full relative z-10 bg-transparent">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Narrative */}
         <div className="lg:col-span-5 space-y-6">
@@ -39,8 +39,11 @@ export function AdaptiveInterviewScene() {
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
             06 / Live Conversation Mechanics
           </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.05]">
-            EVERY QUESTION EMERGES FROM YOUR LAST SENTENCE.
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.05] uppercase">
+            EVERY QUESTION EMERGES{" "}
+            <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
+              FROM YOUR LAST SENTENCE.
+            </span>
           </h2>
           <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
             Watch the dialogue evolve in real time. Veyra doesn&apos;t just verify keywords; it tests trade-off justifications, ranking mathematics, and fail-safe defenses.

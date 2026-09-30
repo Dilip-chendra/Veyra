@@ -38,7 +38,7 @@ export function HumanCinematicMoment() {
   const persona = personas[activePersona];
 
   return (
-    <section className="relative py-28 px-4 sm:px-6 lg:px-8 bg-[#06070d] text-white overflow-hidden border-t border-white/[0.06]">
+    <section className="relative z-10 py-28 px-4 sm:px-6 lg:px-8 bg-transparent text-white overflow-hidden border-t border-white/[0.06]">
       {/* Cinematic ambient spotlight */}
       <div 
         className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[450px] pointer-events-none rounded-full blur-[160px] opacity-20"
@@ -53,9 +53,9 @@ export function HumanCinematicMoment() {
             <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
             Authentic Human Rigor
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.08]">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.08] uppercase">
             THE DIFFERENCE HAPPENS <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-indigo-400">
+            <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
               AFTER YOUR ANSWER.
             </span>
           </h2>

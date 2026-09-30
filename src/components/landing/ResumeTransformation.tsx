@@ -13,7 +13,7 @@ export function ResumeTransformation() {
   const [activeStep, setActiveStep] = useState(1);
 
   return (
-    <section className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full bg-[#06070d]">
+    <section className="py-28 px-5 sm:px-8 lg:px-12 max-w-7xl mx-auto w-full relative z-10 bg-transparent">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Narrative Left */}
         <div className="lg:col-span-5 space-y-6">
@@ -22,8 +22,11 @@ export function ResumeTransformation() {
             08 / Deep Document Parsing
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.05]">
-            YOUR RESUME BECOMES THE INTERVIEW BLUEPRINT.
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.05] uppercase">
+            YOUR RESUME BECOMES{" "}
+            <span className="font-serif italic font-normal tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFE57F] via-amber-300 to-amber-100">
+              THE INTERVIEW BLUEPRINT.
+            </span>
           </h2>
 
           <p className="text-slate-400 text-base leading-relaxed">
